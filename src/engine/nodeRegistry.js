@@ -19,6 +19,30 @@ const NODE_DEFS = {
         shaderKey: null, // special: loads texture directly
     },
 
+    uiImageSlot: {
+        type: 'uiImageSlot',
+        label: 'UI Image Slot',
+        category: 'image',
+        inputs: [],
+        outputs: [
+            { id: 'out', label: 'Image', type: HandleTypes.IMAGE }
+        ],
+        params: {},
+        shaderKey: null, // special: loads texture directly, identical to imageInput but no inline preview
+    },
+
+    webcamInput: {
+        type: 'webcamInput',
+        label: 'Webcam',
+        category: 'image',
+        inputs: [],
+        outputs: [
+            { id: 'out', label: 'Image', type: HandleTypes.IMAGE }
+        ],
+        params: {},
+        shaderKey: null, // special: loads HTMLVideoElement texture directly
+    },
+
     imageOutput: {
         type: 'imageOutput',
         label: 'Image Output',

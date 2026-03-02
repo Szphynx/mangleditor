@@ -16,6 +16,31 @@
     >
       <template #node-imageInput="nodeProps">
         <FlowNode
+          :node-id="nodeProps.id"
+          :node-type="nodeProps.type"
+          :def="nodeProps.data.def"
+          :params="store.nodeParams[nodeProps.id] || {}"
+          :selected="store.selectedNodeId === nodeProps.id"
+          @select="store.selectNode(nodeProps.id)"
+          @image-loaded="(data) => $emit('imageLoaded', nodeProps.id, data)"
+        />
+      </template>
+
+      <template #node-uiImageSlot="nodeProps">
+        <FlowNode
+          :node-id="nodeProps.id"
+          :node-type="nodeProps.type"
+          :def="nodeProps.data.def"
+          :params="store.nodeParams[nodeProps.id] || {}"
+          :selected="store.selectedNodeId === nodeProps.id"
+          @select="store.selectNode(nodeProps.id)"
+          @image-loaded="(data) => $emit('imageLoaded', nodeProps.id, data)"
+        />
+      </template>
+
+      <template #node-webcamInput="nodeProps">
+        <FlowNode
+          :node-id="nodeProps.id"
           :node-type="nodeProps.type"
           :def="nodeProps.data.def"
           :params="store.nodeParams[nodeProps.id] || {}"
@@ -65,6 +90,7 @@
         #[`node-${nodeType}`]="nodeProps"
       >
         <FlowNode
+          :node-id="nodeProps.id"
           :node-type="nodeProps.type"
           :def="nodeProps.data.def"
           :params="store.nodeParams[nodeProps.id] || {}"
@@ -117,7 +143,7 @@ function addNodeAtCenter(type) {
 defineExpose({ addNodeAtCenter })
 
 // List of all node types that don't have special templates
-const specialTypes = ['imageInput', 'imageOutput', 'button', 'slider']
+const specialTypes = ['imageInput', 'uiImageSlot', 'webcamInput', 'imageOutput', 'button', 'slider']
 const otherNodeTypes = computed(() => {
   return Object.keys(getAllNodeDefs()).filter(t => !specialTypes.includes(t))
 })

@@ -141,6 +141,8 @@ onBeforeUnmount(() => {
   if (pipeline) pipeline.dispose()
 })
 
+let frameCount = 0
+
 function runPipeline(time, dt) {
   if (!pipeline?.isInitialized) return
 
@@ -148,7 +150,12 @@ function runPipeline(time, dt) {
   const edges = store.edges
   const params = store.nodeParams
 
-  if (nodes.length === 0) return
+  if (nodes.length === 0) {
+    if (bgCtx && bgCanvasRef.value) {
+      bgCtx.clearRect(0, 0, bgCanvasRef.value.width, bgCanvasRef.value.height)
+    }
+    return
+  }
 
   // 1. Topological sort
   const sortedIds = topologicalSort(nodes, edges)
@@ -177,6 +184,22 @@ function runPipeline(time, dt) {
       bgCtx.drawImage(panelCanvas, 0, 0)
     }
   }
+
+  // 8. Extract pixels for inline preview nodes (throttled to ~15fps to save CPU)
+  if (frameCount % 4 === 0) {
+    const previewNodes = nodes.filter(n => n.type === 'preview')
+    for (const pNode of previewNodes) {
+      const edge = edges.find(e => e.target === pNode.id && e.targetHandle === 'in')
+      if (edge) {
+        // Fetch a scaled down version of the source FBO for the UI
+        const sourceData = pipeline.getScaledPixels(edge.source, 176, 100)
+        if (sourceData) {
+          store.previewImages[pNode.id] = sourceData
+        }
+      }
+    }
+  }
+  frameCount++
 }
 
 function onAddNode(type) {
@@ -195,9 +218,17 @@ function onImageLoaded(nodeId, data) {
   // Cache for reload
   imageCache[nodeId] = data
 
-  // Create Three.js texture from the image
-  const tex = new THREE.Texture(data.img)
-  tex.needsUpdate = true
+  // Create Three.js texture from the image or video
+  let tex;
+  if (data.isVideo) {
+    tex = new THREE.VideoTexture(data.img)
+    tex.minFilter = THREE.LinearFilter
+    tex.magFilter = THREE.LinearFilter
+    tex.format = THREE.RGBAFormat
+  } else {
+    tex = new THREE.Texture(data.img)
+    tex.needsUpdate = true
+  }
   pipeline.setInputTexture(nodeId, tex)
 
   // Invalidate downstream FBOs to force re-evaluation of shaders with the new texture

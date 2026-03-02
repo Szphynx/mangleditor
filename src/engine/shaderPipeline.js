@@ -377,6 +377,16 @@ export class ShaderPipeline {
             const nodeInputEdges = inputEdges[nodeId] || []
             const uniforms = { uTime: time, uResolution: new THREE.Vector2(this.width, this.height) }
 
+            // Set all connected flags to false AND textures to null initially
+            // This is CRITICAL to fix the bug where removing an edge leaves the old texture cached
+            for (const input of def.inputs) {
+                if (input.type === 'image') {
+                    const uName = 'u' + input.id.charAt(0).toUpperCase() + input.id.slice(1)
+                    uniforms[uName + 'Connected'] = false
+                    uniforms[uName] = null
+                }
+            }
+
             let hasImageInput = false // Track whether this node has connected image inputs
 
             for (const ie of nodeInputEdges) {
@@ -387,7 +397,7 @@ export class ShaderPipeline {
 
                 // Get the texture from this source
                 let tex = null
-                if (sourceNode.type === 'imageInput') {
+                if (sourceNode.type === 'imageInput' || sourceNode.type === 'uiImageSlot' || sourceNode.type === 'webcamInput') {
                     tex = this.textures[ie.sourceNodeId] || null
                 } else if (this.fbos[ie.sourceNodeId]) {
                     tex = this.fbos[ie.sourceNodeId].texture
@@ -514,6 +524,35 @@ export class ShaderPipeline {
         const pixels = new Uint8Array(this.width * this.height * 4)
         this.renderer.readRenderTargetPixels(fbo, 0, 0, this.width, this.height, pixels)
         return { pixels, width: this.width, height: this.height }
+    }
+
+    /**
+     * Get downscaled pixels for UI preview nodes to avoid massive GPU-CPU transfers.
+     */
+    getScaledPixels(nodeId, width, height) {
+        const tex = this.getNodeTexture(nodeId)
+        if (!tex || !this.renderer) return null
+
+        // Get or create a temporary small FBO
+        if (!this._previewFBO || this._previewFBO.width !== width || this._previewFBO.height !== height) {
+            if (this._previewFBO) this._previewFBO.dispose()
+            this._previewFBO = new THREE.WebGLRenderTarget(width, height, {
+                minFilter: THREE.LinearFilter,
+                magFilter: THREE.LinearFilter,
+                format: THREE.RGBAFormat,
+                type: THREE.UnsignedByteType
+            })
+        }
+
+        // Render texture to small preview FBO
+        const passMat = this.getOrCreateMaterial('__preview_scale__', 'passthrough', {
+            uTexture: tex
+        })
+        this.renderNode('__preview_scale__', passMat, this._previewFBO)
+
+        const pixels = new Uint8Array(width * height * 4)
+        this.renderer.readRenderTargetPixels(this._previewFBO, 0, 0, width, height, pixels)
+        return { pixels, width, height }
     }
 
     /**

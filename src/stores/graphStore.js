@@ -31,6 +31,9 @@ export const useGraphStore = defineStore('graph', () => {
     // Per-node execution timing (ms) — set by App.vue each frame
     const perfTimings = ref({})
 
+    // Preview images map -> nodeId: ImageData
+    const previewImages = ref({})
+
     // Callback for GPU cleanup when nodes are removed
     let onNodeRemovedCallback = null
 
@@ -480,6 +483,7 @@ export const useGraphStore = defineStore('graph', () => {
         // Data outputs (set by App.vue each frame)
         dataOutputs,
         perfTimings,
+        previewImages,
         getDataOutput(nodeId, handleId) {
             return dataOutputs.value[nodeId]?.[handleId]
         },

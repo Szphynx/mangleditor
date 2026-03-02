@@ -76,8 +76,8 @@
 
       <!-- Special content per node type -->
 
-      <!-- Image Input -->
-      <div v-if="nodeType === 'imageInput'" class="flow-node__controls" @pointerdown.stop @mousedown.stop>
+      <!-- Image Input / UI Image Slot -->
+      <div v-if="nodeType === 'imageInput' || nodeType === 'uiImageSlot'" class="flow-node__controls" @pointerdown.stop @mousedown.stop>
         <input ref="fileInput" type="file" accept="image/*" class="file-input-hidden" @change="onFileSelect" />
         <div
           v-if="!hasImage"
@@ -94,7 +94,23 @@
           <button class="flow-node__inline-btn flow-node__inline-btn--sm" @click.stop="openFileDialog" style="margin-bottom: 4px; width: 100%;">
             📷 Replace Image
           </button>
-          <img :src="imagePreviewUrl" class="flow-node__image-preview" />
+          <img v-if="nodeType === 'imageInput'" :src="imagePreviewUrl" class="flow-node__image-preview" />
+          <div v-else class="flow-node__slot-label" style="text-align: center; color: var(--accent-success); padding: 8px 0; font-size: 11px;">
+            Image Loaded ✓
+          </div>
+        </div>
+      </div>
+
+      <!-- Webcam Input -->
+      <div v-if="nodeType === 'webcamInput'" class="flow-node__controls" @pointerdown.stop @mousedown.stop>
+        <div v-if="!isWebcamActive" class="flow-node__drop-zone" @click.stop="startWebcam">
+          🎥 Start Webcam
+        </div>
+        <div v-else class="flow-node__image-preview-container">
+          <button class="flow-node__inline-btn flow-node__inline-btn--sm" @click.stop="stopWebcam" style="margin-bottom: 4px; width: 100%; background: var(--bg-red-dim); border-color: var(--accent-danger);">
+            Stop Webcam
+          </button>
+          <video ref="webcamVideo" class="flow-node__image-preview" autoplay playsinline muted></video>
         </div>
       </div>
 
@@ -236,8 +252,10 @@ import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { Handle, Position } from '@vue-flow/core'
 import { getTypeColor } from '../engine/typeSystem.js'
 import { NODE_CATEGORIES } from '../engine/nodeRegistry.js'
+import { useGraphStore } from '../stores/graphStore.js'
 
 const props = defineProps({
+  nodeId: { type: String, required: true },
   nodeType: { type: String, required: true },
   def: { type: Object, required: true },
   params: { type: Object, default: () => ({}) },
@@ -251,6 +269,8 @@ const props = defineProps({
 
 const emit = defineEmits(['select', 'imageLoaded', 'export', 'trigger', 'paramChange'])
 
+const store = useGraphStore()
+
 const categoryColor = computed(() => {
   return NODE_CATEGORIES[props.def.category]?.color || '#888'
 })
@@ -263,7 +283,7 @@ const hasImage = computed(() => !!imagePreviewUrl.value)
 
 onMounted(() => {
   // Try to load default image if none provided yet
-  if (props.nodeType === 'imageInput' && !imagePreviewUrl.value) {
+  if ((props.nodeType === 'imageInput' || props.nodeType === 'uiImageSlot') && !imagePreviewUrl.value) {
     const defaultImgPath = '/default_img.jpg'
     imagePreviewUrl.value = defaultImgPath
     
@@ -282,8 +302,85 @@ const monitorCanvas = ref(null)
 const graphHistory = ref([])
 const MAX_GRAPH_POINTS = 100
 
-// Preview canvas ref
+// Preview canvas ref and rendering
 const previewCanvas = ref(null)
+
+watch(() => store.previewImages[props.nodeId], (imgData) => {
+  if (props.nodeType !== 'preview' || !imgData || !previewCanvas.value) return
+  
+  const canvas = previewCanvas.value
+  const ctx = canvas.getContext('2d')
+  
+  if (canvas.width !== imgData.width || canvas.height !== imgData.height) {
+    canvas.width = imgData.width
+    canvas.height = imgData.height
+  }
+
+  // WebGL pixels are RGBA but flipped vertically. We need to flip them when drawing.
+  const tempCanvas = document.createElement('canvas')
+  tempCanvas.width = imgData.width
+  tempCanvas.height = imgData.height
+  const tempCtx = tempCanvas.getContext('2d')
+
+  // Create ImageData
+  const imageData = new ImageData(
+    new Uint8ClampedArray(imgData.pixels.buffer), 
+    imgData.width, 
+    imgData.height
+  )
+  tempCtx.putImageData(imageData, 0, 0)
+  
+  // Draw to actual canvas flipped
+  ctx.save()
+  ctx.scale(1, -1)
+  ctx.drawImage(tempCanvas, 0, -imgData.height)
+  ctx.restore()
+})
+
+// Webcam state
+const isWebcamActive = ref(false)
+const webcamVideo = ref(null)
+let webcamStream = null
+
+async function startWebcam() {
+  try {
+    webcamStream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 }, audio: false })
+    isWebcamActive.value = true
+    
+    // Wait a tick for the video element to mount
+    setTimeout(() => {
+      if (webcamVideo.value) {
+        webcamVideo.value.srcObject = webcamStream
+        webcamVideo.value.onloadedmetadata = () => {
+          webcamVideo.value.play()
+          emit('imageLoaded', { 
+            url: 'webcam', 
+            width: webcamVideo.value.videoWidth, 
+            height: webcamVideo.value.videoHeight, 
+            img: webcamVideo.value,
+            isVideo: true
+          })
+        }
+      }
+    }, 50)
+  } catch (err) {
+    console.error('Failed to access webcam:', err)
+    alert('Could not access webcam. Please check permissions.')
+  }
+}
+
+function stopWebcam() {
+  if (webcamStream) {
+    webcamStream.getTracks().forEach(t => t.stop())
+    webcamStream = null
+  }
+  isWebcamActive.value = false
+  emit('imageLoaded', { url: 'webcam', width: 1, height: 1, img: null, isVideo: false })
+}
+
+onBeforeUnmount(() => {
+  stopWebcam()
+})
 
 function openFileDialog() {
   fileInput.value?.click()
