@@ -272,6 +272,38 @@ body {
 }
 
 /* ============================================
+   EDITOR AREA (center — contains canvas + editor)
+   ============================================ */
+.editor-area {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+}
+
+/* ============================================
+   BACKGROUND RENDERER
+   ============================================ */
+.preview-background {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preview-background canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* ============================================
    NODE PALETTE (Left Sidebar)
    ============================================ */
 .node-palette {
@@ -372,8 +404,16 @@ body {
   background: var(--bg-primary) !important;
 }
 
+.editor-area--bg-mode .vue-flow {
+  background: transparent !important;
+}
+
 .vue-flow__background {
   opacity: 0.3;
+}
+
+.editor-area--bg-mode .vue-flow__background {
+  opacity: 0.6;
 }
 
 .vue-flow__edge-path {

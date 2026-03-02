@@ -17,7 +17,7 @@
     <div class="main-layout">
       <NodePalette @add-node="onAddNode" />
 
-      <div class="editor-area">
+      <div :class="['editor-area', { 'editor-area--bg-mode': store.previewMode === 'background' }]">
         <!-- Background preview: shows the rendered output behind the editor -->
         <div v-show="store.previewMode === 'background'" class="preview-background">
           <canvas ref="bgCanvasRef"></canvas>
@@ -200,6 +200,9 @@ function onImageLoaded(nodeId, data) {
   tex.needsUpdate = true
   pipeline.setInputTexture(nodeId, tex)
 
+  // Invalidate downstream FBOs to force re-evaluation of shaders with the new texture
+  invalidateDownstreamFBOs(nodeId)
+
   // Resize pipeline to image dimensions
   pipeline.resize(data.width, data.height)
 
@@ -207,6 +210,35 @@ function onImageLoaded(nodeId, data) {
   if (previewRef.value) {
     previewRef.value.width = data.width
     previewRef.value.height = data.height
+  }
+}
+
+/**
+ * Walk the edge graph starting from `sourceNodeId` and remove cached
+ * FBO outputs from all downstream nodes. This forces the pipeline to
+ * re-execute those nodes on the next frame.
+ */
+function invalidateDownstreamFBOs(sourceNodeId) {
+  if (!pipeline) return
+  const visited = new Set()
+  const queue = [sourceNodeId]
+  while (queue.length) {
+    const current = queue.shift()
+    if (visited.has(current)) continue
+    visited.add(current)
+    for (const edge of store.edges) {
+      if (edge.source === current && !visited.has(edge.target)) {
+        if (pipeline.fbos[edge.target]) {
+          pipeline.fbos[edge.target].dispose()
+          delete pipeline.fbos[edge.target]
+        }
+        if (pipeline.materials[edge.target]) {
+          pipeline.materials[edge.target].dispose()
+          delete pipeline.materials[edge.target]
+        }
+        queue.push(edge.target)
+      }
+    }
   }
 }
 
