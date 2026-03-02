@@ -31,4 +31,4 @@ Work on this project is sporadic. There are plenty of bugs at the moment!
 
 ## Credits
 
-Coded by szphynx
+vibecoded by a VVVV lover 
