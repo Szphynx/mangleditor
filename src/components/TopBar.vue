@@ -1,0 +1,94 @@
+<template>
+  <div class="top-bar">
+    <span class="top-bar__logo">⬡ IMG MANGLER</span>
+
+    <!-- Editable project title -->
+    <input
+      class="top-bar__title-input"
+      type="text"
+      :value="projectTitle"
+      @input="$emit('updateTitle', $event.target.value)"
+      @blur="$emit('updateTitle', $event.target.value)"
+      placeholder="Untitled Project"
+      title="Project title — used for save/export filenames"
+    />
+
+    <div class="top-bar__divider"></div>
+
+    <button class="top-bar__btn" @click="$emit('save')" title="Save to browser">
+      💾 Save
+    </button>
+    <button class="top-bar__btn" @click="$emit('load')" title="Load from browser">
+      📂 Load
+    </button>
+    <button class="top-bar__btn" @click="$emit('download')" title="Download graph as JSON">
+      ⬇ Download
+    </button>
+    <button class="top-bar__btn" @click="openImport" title="Import graph JSON">
+      ⬆ Import
+    </button>
+    <input
+      ref="importInput"
+      type="file"
+      accept=".json"
+      class="file-input-hidden"
+      @change="onImport"
+    />
+
+    <div class="top-bar__divider"></div>
+
+    <button class="top-bar__btn top-bar__btn--danger" @click="$emit('reset')" title="Clear all nodes">
+      🗑 Reset
+    </button>
+
+    <div class="top-bar__divider"></div>
+
+    <button
+      :class="['top-bar__btn', isRendering ? 'top-bar__btn--running' : 'top-bar__btn--stop']"
+      @click="$emit('toggleRender')"
+      :title="isRendering ? 'Stop rendering' : 'Resume rendering'"
+    >
+      {{ isRendering ? '⏸ Stop' : '▶ Resume' }}
+    </button>
+
+    <button class="top-bar__btn" @click="$emit('togglePreview')" title="Toggle preview mode">
+      {{ previewMode === 'panel' ? '🖥 Panel' : '🌌 Background' }}
+    </button>
+
+    <!-- Status -->
+    <div class="top-bar__status">
+      <div :class="['top-bar__status-dot', { 'top-bar__status-dot--stopped': !isRendering }]"></div>
+      <span>{{ isRendering ? 'RENDERING' : 'STOPPED' }}</span>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+
+const props = defineProps({
+  isRendering: { type: Boolean, default: true },
+  previewMode: { type: String, default: 'panel' },
+  projectTitle: { type: String, default: 'Untitled Project' },
+})
+
+const emit = defineEmits(['save', 'load', 'download', 'import', 'reset', 'toggleRender', 'togglePreview', 'updateTitle'])
+
+const importInput = ref(null)
+
+function openImport() {
+  importInput.value?.click()
+}
+
+function onImport(e) {
+  const file = e.target.files?.[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = () => {
+    emit('import', reader.result)
+  }
+  reader.readAsText(file)
+  // Reset so same file can be imported again
+  e.target.value = ''
+}
+</script>
