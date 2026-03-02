@@ -1,0 +1,651 @@
+{
+  "version": 1,
+  "title": "template1",
+  "timestamp": 1772417055396,
+  "nodes": [
+    {
+      "id": "node_1_mm8bdwir",
+      "type": "imageInput",
+      "position": {
+        "x": -2118.968761886841,
+        "y": -2166.427545209925
+      }
+    },
+    {
+      "id": "node_4_mm8bejpq",
+      "type": "reededGlass",
+      "position": {
+        "x": 499.50302463115474,
+        "y": 144.86991021496357
+      }
+    },
+    {
+      "id": "node_7_mm8bgb04",
+      "type": "blend",
+      "position": {
+        "x": 758.2220322929721,
+        "y": -16.63139458050515
+      }
+    },
+    {
+      "id": "node_8_mm8bgr30",
+      "type": "surfaceBlur",
+      "position": {
+        "x": 484.91467515195205,
+        "y": 305.75984056534804
+      }
+    },
+    {
+      "id": "node_9_mm8bicjc",
+      "type": "levels",
+      "position": {
+        "x": 742.3994560305983,
+        "y": 331.21418320128697
+      }
+    },
+    {
+      "id": "node_10_mm8biioe",
+      "type": "blend",
+      "position": {
+        "x": 1074.1863883316469,
+        "y": 152.59974935663257
+      }
+    },
+    {
+      "id": "node_11_mm8bm6dl",
+      "type": "imageInput",
+      "position": {
+        "x": -702.904294330658,
+        "y": 567.3460218403366
+      }
+    },
+    {
+      "id": "node_12_mm8cu0qz",
+      "type": "lfo",
+      "position": {
+        "x": -220.8419375068448,
+        "y": -45.67581215976108
+      }
+    },
+    {
+      "id": "node_13_mm8cu5p6",
+      "type": "floatToInt",
+      "position": {
+        "x": -54.25428364852652,
+        "y": 125.79202296462266
+      }
+    },
+    {
+      "id": "node_15_mm8cz2jm",
+      "type": "numberMonitor",
+      "position": {
+        "x": 331.4578546035616,
+        "y": 437.560301465997
+      }
+    },
+    {
+      "id": "node_16_mm8d85jt",
+      "type": "random",
+      "position": {
+        "x": -464.65614175731514,
+        "y": 160.22691572680176
+      }
+    },
+    {
+      "id": "node_17_mm8dc7id",
+      "type": "damper",
+      "position": {
+        "x": -250.75685458599963,
+        "y": 266.3101087577052
+      }
+    },
+    {
+      "id": "node_18_mm8dxv5d",
+      "type": "reededGlass",
+      "position": {
+        "x": 1403.9373537605381,
+        "y": 174.81154860498256
+      }
+    },
+    {
+      "id": "node_19_mm8e0utx",
+      "type": "mathClamp",
+      "position": {
+        "x": 623.0054321289062,
+        "y": 525
+      }
+    },
+    {
+      "id": "node_20_mm8e0xus",
+      "type": "numberMonitor",
+      "position": {
+        "x": 1021.4674821495112,
+        "y": 457.57614920933077
+      }
+    },
+    {
+      "id": "node_21_mm8e92aq",
+      "type": "damper",
+      "position": {
+        "x": 1395.531990409189,
+        "y": 462.1798094312461
+      }
+    },
+    {
+      "id": "node_22_mm8e9nt1",
+      "type": "chromaticAberration",
+      "position": {
+        "x": 1685.6753040219526,
+        "y": 183.1990958409323
+      }
+    },
+    {
+      "id": "node_24_mm8eb03x",
+      "type": "displacement",
+      "position": {
+        "x": 1785.0808662845068,
+        "y": 357.2859685313467
+      }
+    },
+    {
+      "id": "node_26_mm8eds0q",
+      "type": "blend",
+      "position": {
+        "x": 2107.77486851436,
+        "y": 252.51977963838186
+      }
+    },
+    {
+      "id": "node_27_mm8egdne",
+      "type": "imageOutput",
+      "position": {
+        "x": 2451.269956236984,
+        "y": 333.6956045614407
+      }
+    },
+    {
+      "id": "node_28_mm8ev0gu",
+      "type": "fft",
+      "position": {
+        "x": 1028.3483427530953,
+        "y": 669.3694814411278
+      }
+    },
+    {
+      "id": "node_29_mm8evfvw",
+      "type": "uvPolar",
+      "position": {
+        "x": 2117.8628389264877,
+        "y": 446.5446814710785
+      }
+    },
+    {
+      "id": "node_31_mm8exek9",
+      "type": "numberMonitor",
+      "position": {
+        "x": 1186.9410268472068,
+        "y": 670.6972772353788
+      }
+    },
+    {
+      "id": "node_32_mm8eyw2z",
+      "type": "feedbackLoop",
+      "position": {
+        "x": 2441.411709172064,
+        "y": 489.9412111747698
+      }
+    },
+    {
+      "id": "node_33_mm8fvxo1",
+      "type": "xerox",
+      "position": {
+        "x": 2746.4035602436275,
+        "y": 405.00305660053834
+      }
+    },
+    {
+      "id": "node_34_mm8ihv0f",
+      "type": "numberMonitor",
+      "position": {
+        "x": 449.46159433203854,
+        "y": -190.95917878617675
+      }
+    },
+    {
+      "id": "node_35_mm8ilujl",
+      "type": "mathAdd",
+      "position": {
+        "x": 142.01643800992596,
+        "y": -9.587377827668192
+      }
+    },
+    {
+      "id": "node_36_mm8inglk",
+      "type": "mathDivide",
+      "position": {
+        "x": 144.0006891610487,
+        "y": -160.39046531299886
+      }
+    },
+    {
+      "id": "node_37_mm8ip9re",
+      "type": "blend",
+      "position": {
+        "x": 2716.5558817859956,
+        "y": 700.7863229348129
+      }
+    },
+    {
+      "id": "node_38_mm8iqowf",
+      "type": "random",
+      "position": {
+        "x": -503.4131459456896,
+        "y": -137.80043389124148
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_node_1_mm8bdwir_out-node_4_mm8bejpq_in",
+      "source": "node_1_mm8bdwir",
+      "sourceHandle": "out",
+      "target": "node_4_mm8bejpq",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e_node_4_mm8bejpq_out-node_7_mm8bgb04_base",
+      "source": "node_4_mm8bejpq",
+      "sourceHandle": "out",
+      "target": "node_7_mm8bgb04",
+      "targetHandle": "base"
+    },
+    {
+      "id": "e_node_8_mm8bgr30_out-node_7_mm8bgb04_overlay",
+      "source": "node_8_mm8bgr30",
+      "sourceHandle": "out",
+      "target": "node_7_mm8bgb04",
+      "targetHandle": "overlay"
+    },
+    {
+      "id": "e_node_8_mm8bgr30_out-node_9_mm8bicjc_in",
+      "source": "node_8_mm8bgr30",
+      "sourceHandle": "out",
+      "target": "node_9_mm8bicjc",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e_node_9_mm8bicjc_out-node_10_mm8biioe_base",
+      "source": "node_9_mm8bicjc",
+      "sourceHandle": "out",
+      "target": "node_10_mm8biioe",
+      "targetHandle": "base"
+    },
+    {
+      "id": "e_node_7_mm8bgb04_out-node_10_mm8biioe_overlay",
+      "source": "node_7_mm8bgb04",
+      "sourceHandle": "out",
+      "target": "node_10_mm8biioe",
+      "targetHandle": "overlay"
+    },
+    {
+      "id": "e_node_11_mm8bm6dl_out-node_8_mm8bgr30_in",
+      "source": "node_11_mm8bm6dl",
+      "sourceHandle": "out",
+      "target": "node_8_mm8bgr30",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e_node_16_mm8d85jt_out-node_12_mm8cu0qz_amplitude",
+      "source": "node_16_mm8d85jt",
+      "sourceHandle": "out",
+      "target": "node_12_mm8cu0qz",
+      "targetHandle": "amplitude"
+    },
+    {
+      "id": "e_node_16_mm8d85jt_out-node_17_mm8dc7id_target",
+      "source": "node_16_mm8d85jt",
+      "sourceHandle": "out",
+      "target": "node_17_mm8dc7id",
+      "targetHandle": "target"
+    },
+    {
+      "id": "e_node_17_mm8dc7id_out-node_15_mm8cz2jm_in",
+      "source": "node_17_mm8dc7id",
+      "sourceHandle": "out",
+      "target": "node_15_mm8cz2jm",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e_node_10_mm8biioe_out-node_18_mm8dxv5d_in",
+      "source": "node_10_mm8biioe",
+      "sourceHandle": "out",
+      "target": "node_18_mm8dxv5d",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e_node_9_mm8bicjc_out-node_18_mm8dxv5d_texture",
+      "source": "node_9_mm8bicjc",
+      "sourceHandle": "out",
+      "target": "node_18_mm8dxv5d",
+      "targetHandle": "texture"
+    },
+    {
+      "id": "e_node_15_mm8cz2jm_out-node_19_mm8e0utx_value",
+      "source": "node_15_mm8cz2jm",
+      "sourceHandle": "out",
+      "target": "node_19_mm8e0utx",
+      "targetHandle": "value"
+    },
+    {
+      "id": "e_node_19_mm8e0utx_out-node_20_mm8e0xus_in",
+      "source": "node_19_mm8e0utx",
+      "sourceHandle": "out",
+      "target": "node_20_mm8e0xus",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e_node_20_mm8e0xus_out-node_21_mm8e92aq_target",
+      "source": "node_20_mm8e0xus",
+      "sourceHandle": "out",
+      "target": "node_21_mm8e92aq",
+      "targetHandle": "target"
+    },
+    {
+      "id": "e_node_21_mm8e92aq_out-node_18_mm8dxv5d_scale",
+      "source": "node_21_mm8e92aq",
+      "sourceHandle": "out",
+      "target": "node_18_mm8dxv5d",
+      "targetHandle": "scale"
+    },
+    {
+      "id": "e_node_18_mm8dxv5d_out-node_22_mm8e9nt1_in",
+      "source": "node_18_mm8dxv5d",
+      "sourceHandle": "out",
+      "target": "node_22_mm8e9nt1",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e_node_22_mm8e9nt1_out-node_24_mm8eb03x_in",
+      "source": "node_22_mm8e9nt1",
+      "sourceHandle": "out",
+      "target": "node_24_mm8eb03x",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e_node_9_mm8bicjc_out-node_24_mm8eb03x_heightmap",
+      "source": "node_9_mm8bicjc",
+      "sourceHandle": "out",
+      "target": "node_24_mm8eb03x",
+      "targetHandle": "heightmap"
+    },
+    {
+      "id": "e_node_24_mm8eb03x_out-node_26_mm8eds0q_base",
+      "source": "node_24_mm8eb03x",
+      "sourceHandle": "out",
+      "target": "node_26_mm8eds0q",
+      "targetHandle": "base"
+    },
+    {
+      "id": "e_node_26_mm8eds0q_out-node_27_mm8egdne_in",
+      "source": "node_26_mm8eds0q",
+      "sourceHandle": "out",
+      "target": "node_27_mm8egdne",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e_node_29_mm8evfvw_out-node_26_mm8eds0q_overlay",
+      "source": "node_29_mm8evfvw",
+      "sourceHandle": "out",
+      "target": "node_26_mm8eds0q",
+      "targetHandle": "overlay"
+    },
+    {
+      "id": "e_node_28_mm8ev0gu_lowMid-node_31_mm8exek9_in",
+      "source": "node_28_mm8ev0gu",
+      "sourceHandle": "lowMid",
+      "target": "node_31_mm8exek9",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e_node_26_mm8eds0q_out-node_32_mm8eyw2z_in",
+      "source": "node_26_mm8eds0q",
+      "sourceHandle": "out",
+      "target": "node_32_mm8eyw2z",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e_node_32_mm8eyw2z_out-node_33_mm8fvxo1_in",
+      "source": "node_32_mm8eyw2z",
+      "sourceHandle": "out",
+      "target": "node_33_mm8fvxo1",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e_node_17_mm8dc7id_out-node_13_mm8cu5p6_in",
+      "source": "node_17_mm8dc7id",
+      "sourceHandle": "out",
+      "target": "node_13_mm8cu5p6",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e_node_13_mm8cu5p6_out-node_35_mm8ilujl_b",
+      "source": "node_13_mm8cu5p6",
+      "sourceHandle": "out",
+      "target": "node_35_mm8ilujl",
+      "targetHandle": "b"
+    },
+    {
+      "id": "e_node_34_mm8ihv0f_out-node_7_mm8bgb04_opacity",
+      "source": "node_34_mm8ihv0f",
+      "sourceHandle": "out",
+      "target": "node_7_mm8bgb04",
+      "targetHandle": "opacity"
+    },
+    {
+      "id": "e_node_35_mm8ilujl_out-node_36_mm8inglk_a",
+      "source": "node_35_mm8ilujl",
+      "sourceHandle": "out",
+      "target": "node_36_mm8inglk",
+      "targetHandle": "a"
+    },
+    {
+      "id": "e_node_17_mm8dc7id_out-node_36_mm8inglk_b",
+      "source": "node_17_mm8dc7id",
+      "sourceHandle": "out",
+      "target": "node_36_mm8inglk",
+      "targetHandle": "b"
+    },
+    {
+      "id": "e_node_36_mm8inglk_out-node_34_mm8ihv0f_in",
+      "source": "node_36_mm8inglk",
+      "sourceHandle": "out",
+      "target": "node_34_mm8ihv0f",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e_node_33_mm8fvxo1_out-node_37_mm8ip9re_base",
+      "source": "node_33_mm8fvxo1",
+      "sourceHandle": "out",
+      "target": "node_37_mm8ip9re",
+      "targetHandle": "base"
+    },
+    {
+      "id": "e_node_12_mm8cu0qz_out-node_35_mm8ilujl_a",
+      "source": "node_12_mm8cu0qz",
+      "sourceHandle": "out",
+      "target": "node_35_mm8ilujl",
+      "targetHandle": "a"
+    },
+    {
+      "id": "e_node_38_mm8iqowf_out-node_12_mm8cu0qz_frequency",
+      "source": "node_38_mm8iqowf",
+      "sourceHandle": "out",
+      "target": "node_12_mm8cu0qz",
+      "targetHandle": "frequency"
+    },
+    {
+      "id": "e_node_24_mm8eb03x_out-node_29_mm8evfvw_in",
+      "source": "node_24_mm8eb03x",
+      "sourceHandle": "out",
+      "target": "node_29_mm8evfvw",
+      "targetHandle": "in"
+    }
+  ],
+  "params": {
+    "node_1_mm8bdwir": {},
+    "node_4_mm8bejpq": {
+      "scale": 6.5,
+      "intensity": 0.05,
+      "angle": 47,
+      "blur": 1.8,
+      "blendAmount": 1
+    },
+    "node_7_mm8bgb04": {
+      "mode": "subtract",
+      "opacity": -0.12975149711980802
+    },
+    "node_8_mm8bgr30": {
+      "radius": 3,
+      "threshold": 0.53,
+      "blendAmount": 1,
+      "_bypass": false
+    },
+    "node_9_mm8bicjc": {
+      "inputBlack": 30,
+      "inputWhite": 96,
+      "gamma": 7.39,
+      "outputBlack": 99,
+      "outputWhite": 236,
+      "channel": "master",
+      "blendAmount": 1
+    },
+    "node_10_mm8biioe": {
+      "mode": "overlay",
+      "opacity": 0.85
+    },
+    "node_11_mm8bm6dl": {},
+    "node_12_mm8cu0qz": {
+      "waveform": "sine",
+      "frequency": 0.7,
+      "amplitude": 2.03,
+      "offset": -1.23,
+      "phase": 122
+    },
+    "node_13_mm8cu5p6": {
+      "mode": "round",
+      "clampMin": 0,
+      "clampMax": 1
+    },
+    "node_15_mm8cz2jm": {
+      "decimals": 3,
+      "showGraph": true
+    },
+    "node_16_mm8d85jt": {
+      "min": 14.91,
+      "max": 2,
+      "mode": "onTrigger",
+      "seed": 10434
+    },
+    "node_17_mm8dc7id": {
+      "smoothing": 0.923
+    },
+    "node_18_mm8dxv5d": {
+      "scale": 8.476262140280836,
+      "intensity": 0.368,
+      "angle": 88,
+      "blur": 0.5,
+      "blendAmount": 0.35,
+      "_bypass": false
+    },
+    "node_19_mm8e0utx": {
+      "min": -210.65,
+      "max": 326.82
+    },
+    "node_20_mm8e0xus": {
+      "decimals": 3,
+      "showGraph": true
+    },
+    "node_21_mm8e92aq": {
+      "smoothing": 0.999
+    },
+    "node_22_mm8e9nt1": {
+      "intensity": 30,
+      "direction": "radial",
+      "centerX": 0.4,
+      "centerY": 0.58,
+      "blendAmount": 1
+    },
+    "node_24_mm8eb03x": {
+      "strength": 0.283,
+      "channel": "r",
+      "blendAmount": 1
+    },
+    "node_26_mm8eds0q": {
+      "mode": "screen",
+      "opacity": 0.54
+    },
+    "node_27_mm8egdne": {
+      "format": "png",
+      "filename": "output"
+    },
+    "node_28_mm8ev0gu": {
+      "smoothing": 0.8,
+      "gain": 2
+    },
+    "node_29_mm8evfvw": {
+      "mode": "fromPolar",
+      "centerX": 0.56,
+      "centerY": 0.7,
+      "_bypass": false
+    },
+    "node_31_mm8exek9": {
+      "decimals": 3,
+      "showGraph": true
+    },
+    "node_32_mm8eyw2z": {
+      "decay": 0.92,
+      "iterations": 16,
+      "blendMode": "normal",
+      "_bypass": false
+    },
+    "node_33_mm8fvxo1": {
+      "threshold": 0.33,
+      "noiseAmount": 0.37,
+      "contrast": 1.8,
+      "blendAmount": 1,
+      "_bypass": false
+    },
+    "node_34_mm8ihv0f": {
+      "decimals": 2,
+      "showGraph": true
+    },
+    "node_35_mm8ilujl": {},
+    "node_36_mm8inglk": {},
+    "node_37_mm8ip9re": {
+      "mode": "normal",
+      "opacity": 0,
+      "_bypass": false
+    },
+    "node_38_mm8iqowf": {
+      "min": 0,
+      "max": 19.52,
+      "mode": "onTrigger",
+      "seed": 29880
+    }
+  },
+  "exposedParams": {
+    "node_7_mm8bgb04": {
+      "opacity": true
+    },
+    "node_12_mm8cu0qz": {
+      "frequency": true,
+      "amplitude": true
+    },
+    "node_18_mm8dxv5d": {
+      "scale": true
+    }
+  },
+  "settings": {
+    "previewMode": "panel"
+  }
+}
