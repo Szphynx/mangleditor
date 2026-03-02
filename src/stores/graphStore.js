@@ -419,11 +419,7 @@ export const useGraphStore = defineStore('graph', () => {
             if (!title) {
                 console.log('No local save found. Loading StarterTemplate by default...')
                 try {
-                    // In development/Vite, we can fetch from the source path, 
-                    // or ideally from the public folder if it was there. 
-                    // Since it's in src/assets, we might need a relative path or Vite-specific import, 
-                    // but usually, a fetch to the dev server works if it's served.
-                    const response = await fetch('/src/assets/StarterTemplate.json')
+                    const response = await fetch(`${import.meta.env.BASE_URL}StarterTemplate.json`)
                     if (response.ok) {
                         const templateJson = await response.text()
                         return loadGraph(templateJson)
