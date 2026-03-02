@@ -395,9 +395,19 @@ export const useGraphStore = defineStore('graph', () => {
     }
 
     /**
-     * Load from localStorage.
+     * Save to localStorage.
      */
-    function loadFromLocalStorage(title = null) {
+    function saveToLocalStorage() {
+        const json = saveGraph()
+        const key = `mangleditor-graph-${projectTitle.value || 'default'}`
+        localStorage.setItem(key, json)
+        return true
+    }
+
+    /**
+     * Load from localStorage. If no save exists, load the Starter Template.
+     */
+    async function loadFromLocalStorage(title = null) {
         try {
             const key = title ? `mangleditor-graph-${title}` : `mangleditor-graph-${projectTitle.value || 'default'}`
             const json = localStorage.getItem(key)
@@ -405,24 +415,21 @@ export const useGraphStore = defineStore('graph', () => {
                 return loadGraph(json)
             }
 
-            // Fallback: load the most recently modified graph if searching for default fails
-            if (!title && (!projectTitle.value || projectTitle.value === 'Untitled Project')) {
-                let latestKey = null
-                let latestTime = 0
-                for (let i = 0; i < localStorage.length; i++) {
-                    const k = localStorage.key(i)
-                    if (k.startsWith('mangleditor-graph-')) {
-                        try {
-                            const data = JSON.parse(localStorage.getItem(k))
-                            if (data.timestamp && data.timestamp > latestTime) {
-                                latestTime = data.timestamp
-                                latestKey = k
-                            }
-                        } catch (e) { /* ignore parse errors */ }
+            // Fallback: If we're looking for the default and it's not found, load the StarterTemplate.json
+            if (!title) {
+                console.log('No local save found. Loading StarterTemplate by default...')
+                try {
+                    // In development/Vite, we can fetch from the source path, 
+                    // or ideally from the public folder if it was there. 
+                    // Since it's in src/assets, we might need a relative path or Vite-specific import, 
+                    // but usually, a fetch to the dev server works if it's served.
+                    const response = await fetch('/src/assets/StarterTemplate.json')
+                    if (response.ok) {
+                        const templateJson = await response.text()
+                        return loadGraph(templateJson)
                     }
-                }
-                if (latestKey) {
-                    return loadGraph(localStorage.getItem(latestKey))
+                } catch (err) {
+                    console.error('Failed to auto-load StarterTemplate:', err)
                 }
             }
             return false

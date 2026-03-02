@@ -132,7 +132,7 @@ onMounted(async () => {
   animLoop.start()
 
   // Try to auto-load from localStorage
-  store.loadFromLocalStorage()
+  await store.loadFromLocalStorage()
 })
 
 onBeforeUnmount(() => {
@@ -271,8 +271,8 @@ function onSave() {
   store.saveToLocalStorage()
 }
 
-function onLoad() {
-  const success = store.loadFromLocalStorage()
+async function onLoad() {
+  const success = await store.loadFromLocalStorage()
   if (!success) {
     alert('No saved graph found')
   }

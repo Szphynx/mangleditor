@@ -4,7 +4,7 @@ Mangleditor is a primitive browser-based alternative to TouchDesigner built in V
 
 ## Features
 
-- **Node-Based Processing**: Connect imagery, textures, and math nodes using a Cables.io-inspired dark mode interface.
+- **Node-Based Processing**: Connect imagery, textures, and math nodes using a Cables.gl-inspired dark mode interface.
 - **Real-time GPU Shaders**: Image processing is offloaded to the GPU using Three.js and custom GLSL fragment shaders.
 - **Mix & Blend Controls**: Bypass toggle and a 0.0 - 1.0 mix slider on every effect node to quickly fade between the original input and the modified output.
 - **Lossless Export**: Once you are happy with the mangled image, export it at full 1:1 scale losslessly.
