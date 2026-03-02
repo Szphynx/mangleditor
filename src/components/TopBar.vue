@@ -1,6 +1,10 @@
 <template>
   <div class="top-bar">
-    <span class="top-bar__logo">⬡ IMG MANGLER</span>
+    <div class="top-bar__logo-container">
+      <img src="/mangleditor-icon.png" class="top-bar__logo-icon" alt="mangleditor" />
+      <span class="top-bar__logo-text">mangleditor</span>
+      <span class="top-bar__coded-by">coded with love and haste</span>
+    </div>
 
     <!-- Editable project title -->
     <input

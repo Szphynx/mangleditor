@@ -174,10 +174,34 @@ export class ShaderPipeline {
      * Dynamically adds new uniforms when connections change.
      */
     getOrCreateMaterial(nodeId, shaderKey, uniforms) {
-        const fragSource = SHADER_MAP[shaderKey]
+        let fragSource = SHADER_MAP[shaderKey]
         if (!fragSource) {
             // Fallback to passthrough
             return this.getOrCreateMaterial(nodeId, 'passthrough', uniforms)
+        }
+
+        // --- AUTOMATIC BLEND INJECTION ---
+        // Inject a uniform for the blend amount and mix the final output with the original input
+        // (Assumes `uIn` or `uTexture` is the primary input image texture)
+        if (shaderKey !== 'passthrough' && shaderKey !== 'feedback') {
+            const hasUIn = fragSource.includes('uniform sampler2D uIn;')
+            const hasUTexture = fragSource.includes('uniform sampler2D uTexture;')
+            if (hasUIn || hasUTexture) {
+                const mainInput = hasUIn ? 'uIn' : 'uTexture'
+
+                // 1. Inject the uniform declaration
+                fragSource = fragSource.replace(
+                    'void main()',
+                    `uniform float uBlendAmount;\nvoid main()`
+                )
+
+                // 2. Inject the mix function at the very end
+                // We find the last assignment to gl_FragColor and wrap it
+                fragSource = fragSource.replace(
+                    /gl_FragColor\s*=\s*([^;]+);([^;]*)$/,
+                    `vec4 effectColor = $1;\n  vec4 originalColor = texture2D(${mainInput}, vUv);\n  gl_FragColor = mix(originalColor, effectColor, uBlendAmount);$2`
+                )
+            }
         }
 
         if (this.materials[nodeId] && this.materials[nodeId]._shaderKey === shaderKey) {

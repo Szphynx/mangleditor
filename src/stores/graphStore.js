@@ -397,16 +397,39 @@ export const useGraphStore = defineStore('graph', () => {
     /**
      * Load from localStorage.
      */
-    function loadFromLocalStorage() {
-        // Try to find any saved graph
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i)
-            if (key.startsWith('image-mangler-graph-')) {
-                const json = localStorage.getItem(key)
-                if (json) return loadGraph(json)
+    function loadFromLocalStorage(title = null) {
+        try {
+            const key = title ? `mangleditor-graph-${title}` : `mangleditor-graph-${projectTitle.value || 'default'}`
+            const json = localStorage.getItem(key)
+            if (json) {
+                return loadGraph(json)
             }
+
+            // Fallback: load the most recently modified graph if searching for default fails
+            if (!title && (!projectTitle.value || projectTitle.value === 'Untitled Project')) {
+                let latestKey = null
+                let latestTime = 0
+                for (let i = 0; i < localStorage.length; i++) {
+                    const k = localStorage.key(i)
+                    if (k.startsWith('mangleditor-graph-')) {
+                        try {
+                            const data = JSON.parse(localStorage.getItem(k))
+                            if (data.timestamp && data.timestamp > latestTime) {
+                                latestTime = data.timestamp
+                                latestKey = k
+                            }
+                        } catch (e) { /* ignore parse errors */ }
+                    }
+                }
+                if (latestKey) {
+                    return loadGraph(localStorage.getItem(latestKey))
+                }
+            }
+            return false
+        } catch (e) {
+            console.error('Failed to load from localStorage:', e)
+            return false
         }
-        return false
     }
 
     /**
@@ -418,7 +441,7 @@ export const useGraphStore = defineStore('graph', () => {
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
-        const safeName = (projectTitle.value || 'image-mangler').replace(/[^a-zA-Z0-9_-]/g, '_')
+        const safeName = (projectTitle.value || 'mangleditor').replace(/[^a-zA-Z0-9_-]/g, '_')
         a.download = `${safeName}.json`
         a.click()
         URL.revokeObjectURL(url)

@@ -113,15 +113,34 @@ body {
   flex-shrink: 0;
 }
 
-.top-bar__logo {
+.top-bar__logo-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.top-bar__logo-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.top-bar__logo-text {
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.05em;
   color: var(--accent-primary);
-  text-transform: uppercase;
   font-family: 'JetBrains Mono', monospace;
-  margin-right: 8px;
-  flex-shrink: 0;
+}
+
+.top-bar__coded-by {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: 'Inter', sans-serif;
+  padding-top: 4px;
+  /* align with logo text */
 }
 
 .top-bar__title-input {

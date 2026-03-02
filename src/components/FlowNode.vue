@@ -90,7 +90,12 @@
         >
           📷 Drop image or click to browse
         </div>
-        <img v-else :src="imagePreviewUrl" class="flow-node__image-preview" />
+        <div v-else class="flow-node__image-preview-container">
+          <button class="flow-node__inline-btn flow-node__inline-btn--sm" @click.stop="openFileDialog" style="margin-bottom: 4px; width: 100%;">
+            📷 Replace Image
+          </button>
+          <img :src="imagePreviewUrl" class="flow-node__image-preview" />
+        </div>
       </div>
 
       <!-- Image Output -->
