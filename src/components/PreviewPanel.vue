@@ -1,12 +1,39 @@
 <template>
-  <div :class="['preview-panel', { hidden: hidden }]">
+  <div 
+    :class="['preview-panel', `preview-panel--${previewMode}`, { hidden: hidden }]"
+    :style="previewMode === 'floating' 
+      ? { top: `${posY}px`, left: `${posX}px` } 
+      : previewMode === 'anchored' 
+        ? { height: `${anchoredHeight}px` } 
+        : {}"
+  >
+    <!-- Resize handle for anchored mode (top edge) -->
+    <div 
+      v-if="previewMode === 'anchored'" 
+      class="preview-panel__resize-handle"
+      @pointerdown="onResizePointerDown"
+    ></div>
+
+    <!-- Draggable Header -->
+    <div 
+      v-if="previewMode === 'floating'"
+      class="preview-panel__header"
+      @pointerdown="onHeaderPointerDown"
+    >
+      <span class="preview-panel__header-title">Live Preview</span>
+    </div>
+
     <!-- Preview toolbar -->
     <div class="preview-panel__toolbar">
-      <button class="preview-panel__tool-btn" @click="zoomIn" title="Zoom In">+</button>
-      <button class="preview-panel__tool-btn" @click="zoomOut" title="Zoom Out">−</button>
+      <span class="preview-panel__badge">{{ width }}×{{ height }}</span>
+      <span v-if="fps && isRendering" class="preview-panel__badge" style="color: var(--accent-primary);">{{ fps }} FPS</span>
+      <span v-if="!isRendering" class="preview-panel__badge" style="color: var(--accent-danger);">STOPPED</span>
+      
+      <div style="flex: 1"></div>
+
+      <span class="preview-panel__zoom-level">{{ Math.round(zoom * 100) }}%</span>
       <button class="preview-panel__tool-btn" @click="fitView" title="Fit">⊡</button>
       <button class="preview-panel__tool-btn" @click="resetZoom" title="Reset Zoom">1:1</button>
-      <span class="preview-panel__zoom-level">{{ Math.round(zoom * 100) }}%</span>
       <button class="preview-panel__tool-btn" @click="showHistogram = !showHistogram" :class="{ active: showHistogram }" title="Toggle Histogram">📊</button>
     </div>
 
@@ -28,17 +55,7 @@
       >
         <canvas ref="canvasRef" class="preview-panel__canvas"></canvas>
       </div>
-    </div>
-
-    <!-- Status overlay -->
-    <div class="preview-panel__overlay">
-      <span class="preview-panel__badge">{{ width }}×{{ height }}</span>
-      <span v-if="fps && isRendering" class="preview-panel__badge" style="color: var(--accent-primary);">
-        {{ fps }} FPS
-      </span>
-      <span v-if="!isRendering" class="preview-panel__badge" style="color: var(--accent-danger);">
-        STOPPED
-      </span>
+      <!-- Removed absolute overlay, moved to toolbar -->
     </div>
 
     <!-- Histogram panel -->
@@ -60,7 +77,66 @@ const props = defineProps({
   isRendering: { type: Boolean, default: true },
   pipeline: { type: Object, default: null },
   fps: { type: Number, default: 0 },
+  previewMode: { type: String, default: 'anchored' },
 })
+
+// Floating window position state
+const posX = ref(400) // Default starting layout position
+const posY = ref(40)
+const isDraggingWindow = ref(false)
+const dragOffset = ref({ x: 0, y: 0 })
+
+function onHeaderPointerDown(e) {
+  if (e.button !== 0) return // Only left click
+  isDraggingWindow.value = true
+  dragOffset.value = {
+    x: e.clientX - posX.value,
+    y: e.clientY - posY.value
+  }
+  
+  // Attach window level listeners so we can drag outside the header
+  window.addEventListener('pointermove', onWindowPointerMove)
+  window.addEventListener('pointerup', onWindowPointerUp)
+}
+
+function onWindowPointerMove(e) {
+  if (!isDraggingWindow.value) return
+  posX.value = e.clientX - dragOffset.value.x
+  posY.value = e.clientY - dragOffset.value.y
+}
+
+function onWindowPointerUp() {
+  isDraggingWindow.value = false
+  window.removeEventListener('pointermove', onWindowPointerMove)
+  window.removeEventListener('pointerup', onWindowPointerUp)
+}
+
+// Anchored window resize state
+const anchoredHeight = ref(300)
+const isResizingAnchored = ref(false)
+
+function onResizePointerDown(e) {
+  if (e.button !== 0) return
+  isResizingAnchored.value = true
+  const startY = e.clientY
+  const startHeight = anchoredHeight.value
+
+  function onPointerMove(eMove) {
+    if (!isResizingAnchored.value) return
+    const dy = startY - eMove.clientY
+    // dy is positive when dragging UP, which means we want to increase the height
+    anchoredHeight.value = Math.max(100, Math.min(window.innerHeight * 0.8, startHeight + dy))
+  }
+
+  function onPointerUp() {
+    isResizingAnchored.value = false
+    window.removeEventListener('pointermove', onPointerMove)
+    window.removeEventListener('pointerup', onPointerUp)
+  }
+
+  window.addEventListener('pointermove', onPointerMove)
+  window.addEventListener('pointerup', onPointerUp)
+}
 
 const canvasRef = ref(null)
 const histCanvas = ref(null)

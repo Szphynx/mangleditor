@@ -4,6 +4,8 @@
       :is-rendering="store.isRendering"
       :preview-mode="store.previewMode"
       :project-title="store.projectTitle"
+      :show-grid="store.showGrid"
+      :show-shadows="store.showShadows"
       @save="onSave"
       @load="onLoad"
       @download="store.downloadGraph()"
@@ -11,7 +13,10 @@
       @reset="onReset"
       @toggle-render="store.toggleRendering()"
       @toggle-preview="store.togglePreviewMode()"
+      @toggle-grid="store.showGrid = !store.showGrid"
+      @toggle-shadows="store.showShadows = !store.showShadows"
       @update-title="(val) => store.projectTitle = val"
+      @update-bg-opacity="(val) => store.bgOpacity = val"
     />
 
     <div class="main-layout">
@@ -21,19 +26,22 @@
         <!-- Background preview: shows the rendered output behind the editor -->
         <div v-show="store.previewMode === 'background'" class="preview-background">
           <canvas ref="bgCanvasRef"></canvas>
+          <div class="preview-background__overlay" :style="{ opacity: store.bgOpacity }"></div>
         </div>
 
         <EditorCanvas
           ref="editorRef"
+          :class="{ 'editor-canvas--no-shadows': !store.showShadows }"
           @image-loaded="onImageLoaded"
           @export-image="onExportImage"
         />
 
         <PreviewPanel
-          v-show="store.previewMode === 'panel'"
+          v-show="store.previewMode === 'anchored' || store.previewMode === 'floating'"
           ref="previewRef"
           :is-rendering="store.isRendering"
           :fps="fps"
+          :preview-mode="store.previewMode"
         />
       </div>
 

@@ -103,20 +103,31 @@
         />
       </template>
 
-      <Background :variant="BackgroundVariant.Dots" :gap="16" :size="2" pattern-color="#333" />
-      <Controls position="top-right" />
+      <Background 
+        v-if="store.showGrid && store.previewMode !== 'background'"
+        :variant="BackgroundVariant.Dots" 
+        :gap="16" 
+        :size="2" 
+        pattern-color="#333" 
+      />
+      
+      <div class="editor-controls">
+        <button @click="zoomIn({ duration: 300 })" title="Zoom In (+)">+</button>
+        <button @click="zoomOut({ duration: 300 })" title="Zoom Out (-)">−</button>
+        <button @click="zoomTo100" title="Zoom to 100% (1:1)">1:1</button>
+        <button @click="fitAll" title="Fit View to All">[ ]</button>
+      </div>
+
       <MiniMap pannable zoomable position="bottom-right" />
     </VueFlow>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import { useVueFlow, VueFlow } from '@vue-flow/core'
 import { Background, BackgroundVariant } from '@vue-flow/background'
-import { Controls } from '@vue-flow/controls'
 import { MiniMap } from '@vue-flow/minimap'
-import '@vue-flow/controls/dist/style.css'
 import '@vue-flow/minimap/dist/style.css'
 import FlowNode from './FlowNode.vue'
 import { useGraphStore } from '../stores/graphStore.js'
@@ -125,7 +136,37 @@ import { getAllNodeDefs } from '../engine/nodeRegistry.js'
 const store = useGraphStore()
 const emit = defineEmits(['imageLoaded', 'exportImage'])
 
-const { viewport, dimensions, project } = useVueFlow()
+const { viewport, dimensions, project, zoomIn, zoomOut, setViewport, fitView } = useVueFlow()
+
+function zoomTo100() {
+  const { x, y } = viewport.value
+  setViewport({ x, y, zoom: 1 }, { duration: 600 })
+}
+
+function fitAll() {
+  fitView({ padding: 0.1, duration: 600 })
+}
+
+function handleKeyDown(e) {
+  // Ignore if typing in an input field
+  if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return
+
+  if (e.key === 'f' || e.key === 'F') {
+    if (store.selectedNodeId) {
+      fitView({ nodes: [store.selectedNodeId], padding: 0.2, duration: 600 })
+    } else {
+      fitView({ padding: 0.1, duration: 600 })
+    }
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeyDown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown)
+})
 
 function addNodeAtCenter(type) {
   const { x, y, zoom } = viewport.value
@@ -199,6 +240,46 @@ function onDrop(event) {
   const projectedX = (event.clientX - bounds.left - x) / zoom
   const projectedY = (event.clientY - bounds.top - y) / zoom
 
-  store.addNode(nodeType, { x: projectedX, y: projectedY })
+    store.addNode(nodeType, { x: projectedX, y: projectedY })
 }
 </script>
+
+<style scoped>
+.editor-canvas {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+.editor-controls {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  padding: 5px;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+.editor-controls button {
+  width: 32px;
+  height: 32px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  cursor: pointer;
+  border-radius: 4px;
+  font-weight: bold;
+  font-family: inherit;
+  transition: background 0.2s, border-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.editor-controls button:hover {
+  background: var(--border-color);
+}
+</style>

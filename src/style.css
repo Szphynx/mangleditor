@@ -402,23 +402,19 @@ body {
 
 /* Vue Flow overrides */
 .vue-flow {
-  background: var(--bg-primary) !important;
-}
-
-.editor-area--bg-mode .vue-flow {
   background: transparent !important;
 }
 
 .vue-flow__background {
-  opacity: 0.3;
-}
-
-.editor-area--bg-mode .vue-flow__background {
-  opacity: 0.6;
+  opacity: 0.8 !important;
+  /* Keep dots visible */
+  position: absolute !important;
+  z-index: 0 !important;
 }
 
 .vue-flow__edge-path {
   stroke-width: 2.5;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
 }
 
 .vue-flow__minimap {
@@ -441,6 +437,14 @@ body {
   overflow: visible;
   display: flex;
   flex-direction: column;
+}
+
+.editor-canvas--no-shadows .flow-node {
+  box-shadow: none;
+}
+
+.editor-canvas--no-shadows .vue-flow__edge-path {
+  filter: none !important;
 }
 
 .flow-node--resizable {
@@ -1017,22 +1021,130 @@ select.param-field__input {
 }
 
 /* ============================================
-   PREVIEW PANEL
+   PREVIEW PANEL (Floating Window)
    ============================================ */
 .preview-panel {
-  height: 300px;
-  background: #000;
-  border-top: 1px solid var(--border-subtle);
-  position: relative;
-  flex-shrink: 0;
+  background: var(--bg-secondary);
   display: flex;
   flex-direction: column;
 }
 
-.preview-panel__canvas {
+.preview-panel__resize-handle {
+  height: 6px;
   width: 100%;
-  height: 100%;
-  display: block;
+  cursor: ns-resize;
+  background: transparent;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  transition: background var(--transition-fast);
+}
+
+.preview-panel__resize-handle:hover,
+.preview-panel__resize-handle:active {
+  background: var(--accent-primary);
+  opacity: 0.5;
+}
+
+.preview-panel--floating {
+  position: absolute;
+  z-index: 100;
+  width: 400px;
+  height: 440px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  resize: both;
+}
+
+.preview-panel--anchored {
+  position: relative;
+  width: 100%;
+  min-height: 100px;
+  border-top: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.preview-panel__header {
+  height: 32px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  cursor: grab;
+  user-select: none;
+}
+
+.preview-panel__header:active {
+  cursor: grabbing;
+}
+
+.preview-panel__header-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.preview-panel__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.preview-panel__tool-btn {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--border-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-family: inherit;
+  font-size: 12px;
+}
+
+.preview-panel__tool-btn:hover {
+  background: var(--bg-surface);
+  border-color: var(--border-color);
+}
+
+.preview-panel__tool-btn.active {
+  background: var(--accent-primary);
+  color: #fff;
+  border-color: var(--accent-primary);
+}
+
+.preview-panel__zoom-level {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+  margin-left: auto;
+}
+
+.preview-panel__viewport {
+  flex: 1;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  background: #000;
+  cursor: grab;
+}
+
+.preview-panel__viewport:active {
+  cursor: grabbing;
 }
 
 .preview-panel__overlay {
@@ -1041,6 +1153,7 @@ select.param-field__input {
   left: 8px;
   display: flex;
   gap: 8px;
+  pointer-events: none;
 }
 
 .preview-panel__badge {
@@ -1053,19 +1166,39 @@ select.param-field__input {
   backdrop-filter: blur(4px);
 }
 
+.preview-panel__canvas-wrap {
+  transform-origin: 0 0;
+  width: 100%;
+  height: 100%;
+}
+
+.preview-panel__canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: var(--bg-primary);
+}
+
 /* Background preview mode */
 .preview-background {
   position: absolute;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.4;
 }
 
 .preview-background canvas {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.preview-background__overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--bg-primary);
+  z-index: 10;
+  pointer-events: none;
 }
 
 /* ============================================

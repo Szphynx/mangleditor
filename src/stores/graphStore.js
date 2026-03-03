@@ -21,9 +21,12 @@ export const useGraphStore = defineStore('graph', () => {
     const nodeParams = reactive({})     // { nodeId: { paramKey: value } }
     const selectedNodeId = ref(null)
     const isRendering = ref(true)
-    const previewMode = ref('panel')    // 'panel' or 'background'
+    const previewMode = ref('anchored')    // Preview Mode (anchored, floating, background)
     const previewNodeId = ref(null)     // which node to preview (null = last output)
     const projectTitle = ref('Untitled Project')
+    const bgOpacity = ref(0.0)          // Opacity of the background preview
+    const showGrid = ref(true)          // Toggle for VueFlow dots array
+    const showShadows = ref(true)       // Toggle for flow-node and edge dropshadows
 
     // Data outputs from evaluator — set by App.vue each frame
     const dataOutputs = ref({})
@@ -263,7 +266,13 @@ export const useGraphStore = defineStore('graph', () => {
      * Toggle preview mode (panel vs background).
      */
     function togglePreviewMode() {
-        previewMode.value = previewMode.value === 'panel' ? 'background' : 'panel'
+        if (previewMode.value === 'anchored') {
+            previewMode.value = 'floating'
+        } else if (previewMode.value === 'floating') {
+            previewMode.value = 'background'
+        } else {
+            previewMode.value = 'anchored'
+        }
     }
 
     /**

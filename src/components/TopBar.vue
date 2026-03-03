@@ -56,8 +56,37 @@
     </button>
 
     <button class="top-bar__btn" @click="$emit('togglePreview')" title="Toggle preview mode">
-      {{ previewMode === 'panel' ? '🖥 Panel' : '🌌 Background' }}
+      {{ previewMode === 'anchored' ? '🖥 Anchored' : previewMode === 'floating' ? '🪟 Floating' : '🌌 Background' }}
     </button>
+
+    <div class="top-bar__divider"></div>
+
+    <button 
+      :class="['top-bar__btn', { 'top-bar__btn--active': showGrid }]" 
+      @click="$emit('toggleGrid')" 
+      title="Toggle background connection grid dots"
+    >
+      ∷ Dots
+    </button>
+
+    <button 
+      :class="['top-bar__btn', { 'top-bar__btn--active': showShadows }]"
+      @click="$emit('toggleShadows')" 
+      title="Toggle CSS drop shadows on nodes and cables"
+    >
+      ☁ Shadows
+    </button>
+
+    <div v-if="previewMode === 'background'" class="top-bar__slider-group" title="Workspace Darkness">
+      <span class="top-bar__slider-label">Dim</span>
+      <input 
+        type="range" 
+        min="0" max="1" step="0.05" 
+        class="top-bar__range"
+        :value="bgOpacity" 
+        @input="$emit('updateBgOpacity', parseFloat($event.target.value))" 
+      />
+    </div>
 
     <!-- Status -->
     <div class="top-bar__status">
@@ -74,9 +103,16 @@ const props = defineProps({
   isRendering: { type: Boolean, default: true },
   previewMode: { type: String, default: 'panel' },
   projectTitle: { type: String, default: 'Untitled Project' },
+  bgOpacity: { type: Number, default: 0.4 },
+  showGrid: { type: Boolean, default: true },
+  showShadows: { type: Boolean, default: true }
 })
 
-const emit = defineEmits(['save', 'load', 'download', 'import', 'reset', 'toggleRender', 'togglePreview', 'updateTitle'])
+const emit = defineEmits([
+  'save', 'load', 'download', 'import', 'reset', 
+  'toggleRender', 'togglePreview', 'updateTitle', 
+  'updateBgOpacity', 'toggleGrid', 'toggleShadows'
+])
 
 const importInput = ref(null)
 
@@ -96,3 +132,29 @@ function onImport(e) {
   e.target.value = ''
 }
 </script>
+
+<style scoped>
+.top-bar__slider-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-panel);
+  padding: 0 8px;
+  height: 28px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--border-subtle);
+  margin-left: 4px;
+}
+.top-bar__slider-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+.top-bar__range {
+  width: 60px;
+  cursor: pointer;
+  accent-color: var(--accent-primary);
+}
+</style>
