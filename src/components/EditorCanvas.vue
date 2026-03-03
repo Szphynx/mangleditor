@@ -47,6 +47,7 @@
           :selected="store.selectedNodeId === nodeProps.id"
           @select="store.selectNode(nodeProps.id)"
           @image-loaded="(data) => $emit('imageLoaded', nodeProps.id, data)"
+          @param-change="(key, val) => store.setParam(nodeProps.id, key, val)"
         />
       </template>
 
@@ -69,6 +70,19 @@
           :selected="store.selectedNodeId === nodeProps.id"
           @select="store.selectNode(nodeProps.id)"
           @trigger="store.triggerButton(nodeProps.id)"
+        />
+      </template>
+
+      <template #node-bang="nodeProps">
+        <FlowNode
+          :node-id="nodeProps.id"
+          :node-type="nodeProps.type"
+          :def="nodeProps.data.def"
+          :params="store.nodeParams[nodeProps.id] || {}"
+          :selected="store.selectedNodeId === nodeProps.id"
+          @select="store.selectNode(nodeProps.id)"
+          @trigger="store.triggerButton(nodeProps.id)"
+          @param-change="(key, val) => store.setParam(nodeProps.id, key, val)"
         />
       </template>
 
@@ -103,14 +117,6 @@
         />
       </template>
 
-      <Background 
-        v-if="store.showGrid && store.previewMode !== 'background'"
-        :variant="BackgroundVariant.Dots" 
-        :gap="16" 
-        :size="2" 
-        pattern-color="#333" 
-      />
-      
       <div class="editor-controls">
         <button @click="zoomIn({ duration: 300 })" title="Zoom In (+)">+</button>
         <button @click="zoomOut({ duration: 300 })" title="Zoom Out (-)">−</button>
@@ -126,7 +132,6 @@
 <script setup>
 import { computed, onMounted, onUnmounted } from 'vue'
 import { useVueFlow, VueFlow } from '@vue-flow/core'
-import { Background, BackgroundVariant } from '@vue-flow/background'
 import { MiniMap } from '@vue-flow/minimap'
 import '@vue-flow/minimap/dist/style.css'
 import FlowNode from './FlowNode.vue'

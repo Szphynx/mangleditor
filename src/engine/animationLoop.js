@@ -11,6 +11,7 @@ export class AnimationLoop {
         this.time = 0
         this.deltaTime = 0
         this.frameId = null
+        this.customWindow = null // Target window context for rAF
         this.callbacks = []
     }
 
@@ -71,6 +72,7 @@ export class AnimationLoop {
             cb(this.time, this.deltaTime)
         }
 
-        this.frameId = requestAnimationFrame(() => this._tick())
+        const targetWindow = this.customWindow || window
+        this.frameId = targetWindow.requestAnimationFrame(() => this._tick())
     }
 }

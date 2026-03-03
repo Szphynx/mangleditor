@@ -126,9 +126,8 @@ export function evaluateDataNodes(sortedIds, nodes, edges, nodeParams, time, del
         if (!def) continue
 
         // Skip image/shader nodes — they're handled by the shader pipeline
-        // But keep utility nodes (numberMonitor/preview) for data evaluation
-        if (def.category === 'image' || def.category === 'uv') continue
-        if (node.type === 'preview') continue // preview is image-category-like
+        // But keep utility nodes (preview/webcamInput) for data/trigger evaluation
+        if ((def.category === 'image' || def.category === 'uv') && node.type !== 'preview' && node.type !== 'webcamInput') continue
 
         const params = nodeParams[nodeId] || {}
         const inputs = getNodeInputs(nodeId, edges, outputs)
@@ -226,7 +225,26 @@ export function evaluateDataNodes(sortedIds, nodes, edges, nodeParams, time, del
                 break
             }
 
+            case 'onStart': {
+                if (!node._hasTriggered) {
+                    node._hasTriggered = true
+                    result.out = 1
+                } else {
+                    result.out = 0
+                }
+                break
+            }
+
             case 'toggle': {
+                const triggerIn = inputs.trigger?.value ?? 0
+                const prevTrigger = node._prevTriggerVal ?? 0
+
+                // On rising edge of trigger input, flip state
+                if (triggerIn >= 0.5 && prevTrigger < 0.5) {
+                    params.state = !params.state
+                }
+                node._prevTriggerVal = triggerIn
+
                 result.out = params.state ? 1 : 0
                 break
             }
@@ -243,6 +261,11 @@ export function evaluateDataNodes(sortedIds, nodes, edges, nodeParams, time, del
 
                 result.out = triggered ? 1 : 0
                 node._prevEdgeVal = inVal
+                break
+            }
+
+            case 'webcamInput': {
+                result.trigger = inputs.trigger?.value ?? 0
                 break
             }
 

@@ -35,11 +35,15 @@ const NODE_DEFS = {
         type: 'webcamInput',
         label: 'Webcam',
         category: 'image',
-        inputs: [],
+        inputs: [
+            { id: 'trigger', label: 'Enable/Trigger', type: HandleTypes.FLOAT, optional: true }
+        ],
         outputs: [
             { id: 'out', label: 'Image', type: HandleTypes.IMAGE }
         ],
-        params: {},
+        params: {
+            enable: { type: 'bool', ui: 'button', default: false, label: 'Enable Webcam' }
+        },
         shaderKey: null, // special: loads HTMLVideoElement texture directly
     },
 
@@ -577,6 +581,17 @@ const NODE_DEFS = {
         shaderKey: null,
     },
 
+    onStart: {
+        type: 'onStart',
+        label: 'On Start (Init)',
+        category: 'logic',
+        inputs: [],
+        outputs: [
+            { id: 'out', label: 'Trigger', type: HandleTypes.FLOAT }
+        ],
+        params: {},
+    },
+
     bang: {
         type: 'bang',
         label: 'Bang',
@@ -584,7 +599,7 @@ const NODE_DEFS = {
         compact: true,
         inputs: [],
         outputs: [
-            { id: 'out', label: 'Trigger', type: HandleTypes.TRIGGER }
+            { id: 'out', label: 'Trigger', type: HandleTypes.FLOAT }
         ],
         params: {
             label: { type: 'string', default: 'Bang!', label: 'Label' },
@@ -955,6 +970,7 @@ export const NODE_CATEGORIES = {
     image: { label: 'Image', icon: '🖼️', color: '#00d4ff' },
     animation: { label: 'Animation', icon: '⏱️', color: '#9b59b6' },
     trigger: { label: 'Controls', icon: '🎛️', color: '#2ecc71' },
+    logic: { label: 'Logic', icon: '🧠', color: '#f39c12' },
     math: { label: 'Math', icon: '🔢', color: '#ff9a2e' },
     uv: { label: 'UV / Texture', icon: '🌀', color: '#ff6eb4' },
     utility: { label: 'Utility', icon: '🔍', color: '#a0a0b0' },

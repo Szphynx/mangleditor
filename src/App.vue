@@ -4,7 +4,6 @@
       :is-rendering="store.isRendering"
       :preview-mode="store.previewMode"
       :project-title="store.projectTitle"
-      :show-grid="store.showGrid"
       :show-shadows="store.showShadows"
       @save="onSave"
       @load="onLoad"
@@ -13,7 +12,6 @@
       @reset="onReset"
       @toggle-render="store.toggleRendering()"
       @toggle-preview="store.togglePreviewMode()"
-      @toggle-grid="store.showGrid = !store.showGrid"
       @toggle-shadows="store.showShadows = !store.showShadows"
       @open-popup="onOpenPopup"
       @update-title="(val) => store.projectTitle = val"
@@ -146,7 +144,13 @@ function onOpenPopup() {
     }
   }, 50)
 
+  // Link animation loop to popup window to avert main-thread Chrome throttling
+  if (animLoop) {
+    animLoop.customWindow = popupWindow
+  }
+
   popupWindow.addEventListener('beforeunload', () => {
+    if (animLoop) animLoop.customWindow = null
     popupWindow = null
     popupCtx = null
   })
@@ -248,8 +252,11 @@ function runPipeline(time, dt) {
   if (store.previewMode === 'background' && bgCtx && bgCanvasRef.value) {
     const panelCanvas = previewRef.value?.getCanvas?.()
     if (panelCanvas && panelCanvas.width > 0 && panelCanvas.height > 0) {
-      bgCanvasRef.value.width = panelCanvas.width
-      bgCanvasRef.value.height = panelCanvas.height
+      if (bgCanvasRef.value.width !== panelCanvas.width || bgCanvasRef.value.height !== panelCanvas.height) {
+        bgCanvasRef.value.width = panelCanvas.width
+        bgCanvasRef.value.height = panelCanvas.height
+      }
+      bgCtx.clearRect(0, 0, bgCanvasRef.value.width, bgCanvasRef.value.height)
       bgCtx.drawImage(panelCanvas, 0, 0)
     }
   }

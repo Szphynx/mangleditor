@@ -157,11 +157,11 @@
 
       <!-- Webcam Input -->
       <div v-if="nodeType === 'webcamInput'" class="flow-node__controls" @pointerdown.stop @mousedown.stop>
-        <div v-if="!isWebcamActive" class="flow-node__drop-zone" @click.stop="startWebcam">
+        <button v-if="!isWebcamActive" class="flow-node__inline-btn flow-node__inline-btn--sm" @click.stop="$emit('paramChange', 'enable', true)" style="width: 100%;">
           🎥 Start Webcam
-        </div>
+        </button>
         <div v-else class="flow-node__image-preview-container">
-          <button class="flow-node__inline-btn flow-node__inline-btn--sm" @click.stop="stopWebcam" style="margin-bottom: 4px; width: 100%; background: var(--bg-red-dim); border-color: var(--accent-danger);">
+          <button class="flow-node__inline-btn flow-node__inline-btn--sm" @click.stop="$emit('paramChange', 'enable', false)" style="margin-bottom: 4px; width: 100%; background: var(--bg-red-dim); border-color: var(--accent-danger);">
             Stop Webcam
           </button>
           <video ref="webcamVideo" class="flow-node__image-preview" autoplay playsinline muted></video>
@@ -175,10 +175,10 @@
         </button>
       </div>
 
-      <!-- Button node -->
-      <div v-if="nodeType === 'button'" class="flow-node__controls" @pointerdown.stop @mousedown.stop>
+      <!-- Button / Bang node -->
+      <div v-if="nodeType === 'button' || nodeType === 'bang'" class="flow-node__controls" @pointerdown.stop @mousedown.stop>
         <button class="flow-node__inline-btn" @click.stop="$emit('trigger')">
-          {{ params.label || 'Press' }}
+          {{ params.label || 'Bang!' }}
         </button>
       </div>
 
@@ -596,6 +596,22 @@ function drawGraph() {
     ctx.stroke()
   }
 }
+
+// Ensure the webcam dynamically starts/stops based on param changes or wired triggers
+const evaluatedWebcamEnable = computed(() => {
+  if (props.nodeType !== 'webcamInput') return false
+  const paramEnable = props.params?.enable === true
+  const triggerIn = store.dataOutputs[props.nodeId]?.trigger ?? 0
+  return paramEnable || triggerIn > 0.5
+})
+
+watch(evaluatedWebcamEnable, (enabled) => {
+  if (enabled && !isWebcamActive.value) {
+    startWebcam()
+  } else if (!enabled && isWebcamActive.value) {
+    stopWebcam()
+  }
+}, { immediate: true })
 </script>
 
 <style scoped>

@@ -112,9 +112,21 @@
             </select>
           </template>
 
-          <!-- Boolean checkbox -->
+          <!-- Boolean logic -->
           <template v-else-if="paramDef.type === 'bool'">
-            <label class="param-field__checkbox">
+            <button
+               v-if="paramDef.ui === 'button'"
+               class="flow-node__inline-btn"
+               style="width: 100%; margin-top: 4px; padding: 6px;"
+               :style="{ 
+                 background: (params[key] ?? paramDef.default) ? 'var(--bg-red-dim)' : 'var(--bg-tertiary)',
+                 borderColor: (params[key] ?? paramDef.default) ? 'var(--accent-danger)' : 'var(--border-color)'
+               }"
+               @click="onParamChange(key, !(params[key] ?? paramDef.default))"
+            >
+               {{ (params[key] ?? paramDef.default) ? 'Stop' : 'Start' }} {{ paramDef.label.replace('Enable', '') }}
+            </button>
+            <label v-else class="param-field__checkbox">
               <input
                 type="checkbox"
                 :checked="params[key] ?? paramDef.default"

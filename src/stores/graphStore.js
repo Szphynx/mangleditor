@@ -25,7 +25,6 @@ export const useGraphStore = defineStore('graph', () => {
     const previewNodeId = ref(null)     // which node to preview (null = last output)
     const projectTitle = ref('Untitled Project')
     const bgOpacity = ref(0.0)          // Opacity of the background preview
-    const showGrid = ref(true)          // Toggle for VueFlow dots array
     const showShadows = ref(true)       // Toggle for flow-node and edge dropshadows
 
     // Data outputs from evaluator — set by App.vue each frame
@@ -389,7 +388,8 @@ export const useGraphStore = defineStore('graph', () => {
 
             // Restore settings
             if (data.settings) {
-                previewMode.value = data.settings.previewMode || 'panel'
+                // Ignore saved view modes; force anchored view internally
+                previewMode.value = 'anchored'
             }
 
             // Update nodeIdCounter

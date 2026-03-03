@@ -65,14 +65,6 @@
     <div class="top-bar__divider"></div>
 
     <button 
-      :class="['top-bar__btn', { 'top-bar__btn--active': showGrid }]" 
-      @click="$emit('toggleGrid')" 
-      title="Toggle background connection grid dots"
-    >
-      ∷ Dots
-    </button>
-
-    <button 
       :class="['top-bar__btn', { 'top-bar__btn--active': showShadows }]"
       @click="$emit('toggleShadows')" 
       title="Toggle CSS drop shadows on nodes and cables"
@@ -107,14 +99,13 @@ const props = defineProps({
   previewMode: { type: String, default: 'panel' },
   projectTitle: { type: String, default: 'Untitled Project' },
   bgOpacity: { type: Number, default: 0.4 },
-  showGrid: { type: Boolean, default: true },
   showShadows: { type: Boolean, default: true }
 })
 
 const emit = defineEmits([
   'save', 'load', 'download', 'import', 'reset', 
   'toggleRender', 'togglePreview', 'updateTitle', 
-  'updateBgOpacity', 'toggleGrid', 'toggleShadows',
+  'updateBgOpacity', 'toggleShadows',
   'openPopup'
 ])
 
