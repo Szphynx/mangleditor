@@ -15,6 +15,7 @@
       @toggle-preview="store.togglePreviewMode()"
       @toggle-grid="store.showGrid = !store.showGrid"
       @toggle-shadows="store.showShadows = !store.showShadows"
+      @open-popup="onOpenPopup"
       @update-title="(val) => store.projectTitle = val"
       @update-bg-opacity="(val) => store.bgOpacity = val"
     />
@@ -90,6 +91,66 @@ const imageCache = {}
 
 // Background 2D context for copying the rendered frame
 let bgCtx = null
+
+// Popup window state
+let popupWindow = null
+let popupCtx = null
+
+function onOpenPopup() {
+  if (popupWindow && !popupWindow.closed) {
+    popupWindow.focus()
+    return
+  }
+  
+  popupWindow = window.open('', 'ImageManglerPopup', 'width=800,height=600,menubar=no,toolbar=no,location=no,status=no')
+  if (!popupWindow) {
+    alert('Popup blocked! Please allow popups to open the external renderer.')
+    return
+  }
+  
+  popupWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Image Mangler Renderer</title>
+      <style>
+        body { 
+          margin: 0; 
+          background: #000; 
+          width: 100vw; 
+          height: 100vh; 
+          overflow: hidden; 
+          display: flex; 
+          align-items: center; 
+          justify-content: center; 
+        }
+        canvas { 
+          width: 100%; 
+          height: 100%; 
+          object-fit: contain; 
+        }
+      </style>
+    </head>
+    <body>
+      <canvas id="out"></canvas>
+    </body>
+    </html>
+  `)
+  popupWindow.document.close()
+  
+  // Give DOM a microtick to parse body
+  setTimeout(() => {
+    const outCanvas = popupWindow.document.getElementById('out')
+    if (outCanvas) {
+      popupCtx = outCanvas.getContext('2d')
+    }
+  }, 50)
+
+  popupWindow.addEventListener('beforeunload', () => {
+    popupWindow = null
+    popupCtx = null
+  })
+}
 
 onMounted(async () => {
   await nextTick()
@@ -193,20 +254,20 @@ function runPipeline(time, dt) {
     }
   }
 
-  // 8. Extract pixels for inline preview nodes (throttled to ~15fps to save CPU)
-  if (frameCount % 4 === 0) {
-    const previewNodes = nodes.filter(n => n.type === 'preview')
-    for (const pNode of previewNodes) {
-      const edge = edges.find(e => e.target === pNode.id && e.targetHandle === 'in')
-      if (edge) {
-        // Fetch a scaled down version of the source FBO for the UI
-        const sourceData = pipeline.getScaledPixels(edge.source, 176, 100)
-        if (sourceData) {
-          store.previewImages[pNode.id] = sourceData
-        }
+  // 7.5 Copy to Popup Window if active
+  if (popupWindow && !popupWindow.closed && popupCtx) {
+    const panelCanvas = previewRef.value?.getCanvas?.()
+    if (panelCanvas && panelCanvas.width > 0 && panelCanvas.height > 0) {
+      const outCanvas = popupCtx.canvas
+      if (outCanvas.width !== panelCanvas.width || outCanvas.height !== panelCanvas.height) {
+        outCanvas.width = panelCanvas.width
+        outCanvas.height = panelCanvas.height
       }
+      popupCtx.clearRect(0, 0, outCanvas.width, outCanvas.height)
+      popupCtx.drawImage(panelCanvas, 0, 0)
     }
   }
+
   frameCount++
 }
 

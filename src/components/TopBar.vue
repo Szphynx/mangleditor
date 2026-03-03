@@ -58,6 +58,9 @@
     <button class="top-bar__btn" @click="$emit('togglePreview')" title="Toggle preview mode">
       {{ previewMode === 'anchored' ? '🖥 Anchored' : previewMode === 'floating' ? '🪟 Floating' : '🌌 Background' }}
     </button>
+    <button class="top-bar__btn" @click="$emit('openPopup')" title="Open renderer in a separate pop-up window">
+      ↗ Popout
+    </button>
 
     <div class="top-bar__divider"></div>
 
@@ -111,7 +114,8 @@ const props = defineProps({
 const emit = defineEmits([
   'save', 'load', 'download', 'import', 'reset', 
   'toggleRender', 'togglePreview', 'updateTitle', 
-  'updateBgOpacity', 'toggleGrid', 'toggleShadows'
+  'updateBgOpacity', 'toggleGrid', 'toggleShadows',
+  'openPopup'
 ])
 
 const importInput = ref(null)
