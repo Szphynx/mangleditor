@@ -103,7 +103,8 @@
         />
       </template>
 
-      <Background variant="dots" :gap="20" :size="2" pattern-color="#2a2a40" />
+      <Background :variant="BackgroundVariant.Dots" :gap="16" :size="2" pattern-color="#333" />
+      <Controls position="top-right" />
       <MiniMap pannable zoomable position="bottom-right" />
     </VueFlow>
   </div>
@@ -112,8 +113,11 @@
 <script setup>
 import { computed } from 'vue'
 import { useVueFlow, VueFlow } from '@vue-flow/core'
-import { Background } from '@vue-flow/background'
+import { Background, BackgroundVariant } from '@vue-flow/background'
+import { Controls } from '@vue-flow/controls'
 import { MiniMap } from '@vue-flow/minimap'
+import '@vue-flow/controls/dist/style.css'
+import '@vue-flow/minimap/dist/style.css'
 import FlowNode from './FlowNode.vue'
 import { useGraphStore } from '../stores/graphStore.js'
 import { getAllNodeDefs } from '../engine/nodeRegistry.js'

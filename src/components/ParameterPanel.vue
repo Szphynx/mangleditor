@@ -21,16 +21,29 @@
           <div class="param-field__header">
             <label class="param-field__label">{{ paramDef.label }}</label>
 
-            <!-- Expose as input toggle (only for float/int params) -->
-            <button
-              v-if="paramDef.type === 'float' || paramDef.type === 'int'"
-              class="param-field__expose-btn"
-              :class="{ 'param-field__expose-btn--active': store.isParamExposed(store.selectedNodeId, key) }"
-              @click="store.toggleExposeParam(store.selectedNodeId, key)"
-              :title="store.isParamExposed(store.selectedNodeId, key) ? 'Unexpose input' : 'Expose as input handle'"
-            >
-              {{ store.isParamExposed(store.selectedNodeId, key) ? '🔗' : '⊕' }}
-            </button>
+            <div style="display: flex; gap: 4px;">
+              <!-- Randomize Bounds Toggle (only for float/int) -->
+              <button
+                v-if="paramDef.type === 'float' || paramDef.type === 'int'"
+                class="param-field__expose-btn"
+                :class="{ 'param-field__expose-btn--active': expandedRnd[key] }"
+                @click="expandedRnd[key] = !expandedRnd[key]"
+                title="Toggle Randomizer Bounds"
+              >
+                🎲
+              </button>
+              
+              <!-- Expose as input toggle (only for float/int params) -->
+              <button
+                v-if="paramDef.type === 'float' || paramDef.type === 'int'"
+                class="param-field__expose-btn"
+                :class="{ 'param-field__expose-btn--active': store.isParamExposed(store.selectedNodeId, key) }"
+                @click="store.toggleExposeParam(store.selectedNodeId, key)"
+                :title="store.isParamExposed(store.selectedNodeId, key) ? 'Unexpose input' : 'Expose as input handle'"
+              >
+                {{ store.isParamExposed(store.selectedNodeId, key) ? '🔗' : '⊕' }}
+              </button>
+            </div>
           </div>
 
           <!-- Float / Int slider -->
@@ -38,22 +51,51 @@
             <input
               type="range"
               class="param-field__input"
-              :min="paramDef.min"
-              :max="paramDef.max"
-              :step="paramDef.step"
+              :min="key === 'value' && params.min !== undefined ? params.min : paramDef.min"
+              :max="key === 'value' && params.max !== undefined ? params.max : paramDef.max"
+              :step="key === 'value' && params.step !== undefined ? params.step : paramDef.step"
               :value="params[key] ?? paramDef.default"
               @input="onParamChange(key, paramDef.type === 'int' ? parseInt($event.target.value) : parseFloat($event.target.value))"
             />
             <div class="param-field__range-info">
-              <span>{{ paramDef.min }}</span>
+              <span>{{ key === 'value' && params.min !== undefined ? params.min : paramDef.min }}</span>
               <input
                 type="number"
                 class="param-field__number-input mono"
-                :step="paramDef.step"
+                :step="key === 'value' && params.step !== undefined ? params.step : paramDef.step"
                 :value="formatValue(params[key] ?? paramDef.default, paramDef.type)"
                 @change="onParamChange(key, paramDef.type === 'int' ? parseInt($event.target.value) : parseFloat($event.target.value))"
               />
-              <span>{{ paramDef.max }}</span>
+              <span>{{ key === 'value' && params.max !== undefined ? params.max : paramDef.max }}</span>
+            </div>
+            
+            <div v-show="expandedRnd[key]" class="param-field__random-bounds-card">
+              <div class="param-field__random-bounds-header">🎲 Randomizer Range</div>
+              <div class="param-field__random-bounds-inputs">
+                <div style="display: flex; flex-direction: column; gap: 2px;">
+                  <span style="font-size: 9px; opacity: 0.7;">Min</span>
+                  <input
+                    type="number"
+                    class="param-field__number-input mono"
+                    :step="paramDef.step"
+                    :value="params[`_randMin_${key}`] ?? (key === 'value' && params.min !== undefined ? params.min : paramDef.min) ?? 0"
+                    @change="onParamChange(`_randMin_${key}`, paramDef.type === 'int' ? parseInt($event.target.value) : parseFloat($event.target.value))"
+                    title="Min random value"
+                  />
+                </div>
+                <span style="opacity: 0.5; font-size: 10px; margin-top: 10px;">to</span>
+                <div style="display: flex; flex-direction: column; gap: 2px;">
+                  <span style="font-size: 9px; opacity: 0.7;">Max</span>
+                  <input
+                    type="number"
+                    class="param-field__number-input mono"
+                    :step="paramDef.step"
+                    :value="params[`_randMax_${key}`] ?? (key === 'value' && params.max !== undefined ? params.max : paramDef.max) ?? 1"
+                    @change="onParamChange(`_randMax_${key}`, paramDef.type === 'int' ? parseInt($event.target.value) : parseFloat($event.target.value))"
+                    title="Max random value"
+                  />
+                </div>
+              </div>
             </div>
           </template>
 
@@ -123,11 +165,12 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import { useGraphStore } from '../stores/graphStore.js'
 import { NODE_CATEGORIES } from '../engine/nodeRegistry.js'
 
 const store = useGraphStore()
+const expandedRnd = ref({})
 
 const def = computed(() => store.selectedNodeDef || { label: '', type: '', params: {}, inputs: [], outputs: [], category: '' })
 const params = computed(() => store.selectedNodeParams)

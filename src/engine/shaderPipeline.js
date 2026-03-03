@@ -34,6 +34,11 @@ import xeroxFrag from '../shaders/xerox.frag?raw'
 import crtFrag from '../shaders/crt.frag?raw'
 import motionBlurFrag from '../shaders/motion_blur.frag?raw'
 import ditheringFrag from '../shaders/dithering.frag?raw'
+import liquidDeformFrag from '../shaders/liquidDeform.frag?raw'
+import asciiFrag from '../shaders/ascii.frag?raw'
+import asciiV2Frag from '../shaders/asciiV2.frag?raw'
+import fisheyeFrag from '../shaders/fisheye.frag?raw'
+import noiseContoursFrag from '../shaders/noiseContours.frag?raw'
 
 const SHADER_MAP = {
     passthrough: passthroughFrag,
@@ -54,6 +59,11 @@ const SHADER_MAP = {
     crt: crtFrag,
     motionBlur: motionBlurFrag,
     dithering: ditheringFrag,
+    liquidDeform: liquidDeformFrag,
+    ascii: asciiFrag,
+    asciiV2: asciiV2Frag,
+    fisheye: fisheyeFrag,
+    noiseContours: noiseContoursFrag,
 }
 
 const MAX_FBOS = 20
@@ -449,6 +459,9 @@ export class ShaderPipeline {
                     // Pass as int index
                     const options = paramDef.options || []
                     uniforms[uName] = options.indexOf(val)
+                } else if (paramDef.type === 'color') {
+                    // Convert Hex string #RRGGBB into THREE.Color for vec3 uniforms
+                    uniforms[uName] = new THREE.Color(val)
                 }
             }
 

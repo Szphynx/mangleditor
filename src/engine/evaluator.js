@@ -246,6 +246,27 @@ export function evaluateDataNodes(sortedIds, nodes, edges, nodeParams, time, del
                 break
             }
 
+            case 'changeTrigger': {
+                const inVal = inputs.in?.value ?? 0
+                const threshold = params.threshold ?? 0.1
+
+                if (node._lastTriggerVal === undefined) {
+                    node._lastTriggerVal = inVal
+                }
+
+                const prevVal = node._lastTriggerVal
+                let triggered = false
+
+                // If the accumulated change since the last trigger exceeds the threshold
+                if (Math.abs(inVal - prevVal) >= threshold) {
+                    triggered = true
+                    node._lastTriggerVal = inVal
+                }
+
+                result.out = triggered ? 1 : 0
+                break
+            }
+
             case 'slider':
             case 'knob': {
                 const val = params.value ?? 0.5

@@ -257,6 +257,73 @@ const NODE_DEFS = {
         shaderKey: 'xerox',
     },
 
+    liquidDeform: {
+        type: 'liquidDeform',
+        label: 'Liquid Deform',
+        category: 'uv', // Moved to UV to make sure it groups better
+        inputs: [
+            { id: 'in', label: 'Image', type: HandleTypes.IMAGE }
+        ],
+        outputs: [
+            { id: 'out', label: 'Image', type: HandleTypes.IMAGE }
+        ],
+        params: {
+            scale: { type: 'float', default: 1.0, min: 0.1, max: 10.0, step: 0.01, label: 'Zoom/Scale' },
+            intensity: { type: 'float', default: 1.0, min: 0.0, max: 5.0, step: 0.01, label: 'Swirl Int.' },
+            speed: { type: 'float', default: 1.0, min: 0.0, max: 5.0, step: 0.01, label: 'Swirl Spd' },
+            samples: { type: 'float', default: 20.0, min: 1.0, max: 20.0, step: 1.0, label: 'Samples' },
+            gammaLift: { type: 'float', default: 1.0, min: 0.1, max: 5.0, step: 0.01, label: 'GammaLift' },
+            blendAmount: { type: 'float', default: 1.0, min: 0, max: 1, step: 0.01, label: 'Mix/Blend' },
+        },
+        shaderKey: 'liquidDeform',
+    },
+
+    noiseContours: {
+        type: 'noiseContours',
+        label: 'Noise Contours',
+        category: 'image',
+        inputs: [
+            { id: 'in', label: 'Image', type: HandleTypes.IMAGE },
+            { id: 'texture', label: 'Overlay Tex', type: HandleTypes.IMAGE, optional: true },
+        ],
+        outputs: [
+            { id: 'out', label: 'Image', type: HandleTypes.IMAGE }
+        ],
+        params: {
+            speed: { type: 'float', default: 1.0, min: 0.0, max: 5.0, step: 0.01, label: 'Speed' },
+            scale: { type: 'float', default: 1.0, min: 0.1, max: 4.0, step: 0.01, label: 'Scale' },
+            palNum: { type: 'float', default: 9.0, min: 2.0, max: 20.0, step: 1.0, label: 'Contour Bands' },
+            edgeStrength: { type: 'float', default: 5.0, min: 0.0, max: 20.0, step: 0.1, label: 'Edge Strength' },
+            highlight: { type: 'float', default: 10.0, min: 0.0, max: 30.0, step: 0.1, label: 'Highlight' },
+            hueShift: { type: 'float', default: -0.25, min: -3.14, max: 3.14, step: 0.01, label: 'Hue Shift' },
+            hueRadius: { type: 'float', default: 0.4, min: 0.0, max: 2.0, step: 0.01, label: 'Hue Radius' },
+            imageBlend: { type: 'float', default: 0.0, min: 0.0, max: 1.0, step: 0.01, label: 'Image Color' },
+            taper: { type: 'float', default: 1.0, min: 0.0, max: 3.0, step: 0.01, label: 'Taper' },
+            blendAmount: { type: 'float', default: 1.0, min: 0.0, max: 1.0, step: 0.01, label: 'Blend' },
+        },
+        shaderKey: 'noiseContours',
+    },
+
+    fisheye: {
+        type: 'fisheye',
+        label: 'Fisheye',
+        category: 'image',
+        inputs: [
+            { id: 'in', label: 'Image', type: HandleTypes.IMAGE },
+        ],
+        outputs: [
+            { id: 'out', label: 'Image', type: HandleTypes.IMAGE }
+        ],
+        params: {
+            power: { type: 'float', default: 1.0, min: -3.0, max: 3.0, step: 0.01, label: 'Power' },
+            centerX: { type: 'float', default: 0.5, min: 0.1, max: 0.9, step: 0.01, label: 'Center X' },
+            centerY: { type: 'float', default: 0.5, min: 0.1, max: 0.9, step: 0.01, label: 'Center Y' },
+            zoom: { type: 'float', default: 1.0, min: 0.1, max: 4.0, step: 0.01, label: 'Zoom' },
+            blendAmount: { type: 'float', default: 1.0, min: 0.0, max: 1.0, step: 0.01, label: 'Blend' },
+        },
+        shaderKey: 'fisheye',
+    },
+
     crt: {
         type: 'crt',
         label: 'CRT Display',
@@ -275,6 +342,53 @@ const NODE_DEFS = {
             blendAmount: { type: 'float', default: 1.0, min: 0, max: 1, step: 0.01, label: 'Mix / Blend' },
         },
         shaderKey: 'crt',
+    },
+
+    ascii: {
+        type: 'ascii',
+        label: 'ASCII Art',
+        category: 'image',
+        inputs: [
+            { id: 'in', label: 'Image', type: HandleTypes.IMAGE },
+            { id: 'texture', label: 'Overlay Tex', type: HandleTypes.IMAGE, optional: true }
+        ],
+        outputs: [
+            { id: 'out', label: 'Image', type: HandleTypes.IMAGE }
+        ],
+        params: {
+            cellSize: { type: 'float', default: 12.0, min: 4.0, max: 48.0, step: 1.0, label: 'Cell Size' },
+            brightness: { type: 'float', default: 0.0, min: -1.0, max: 1.0, step: 0.01, label: 'Threshold Shift' },
+            colorMode: { type: 'float', default: 0.0, min: 0.0, max: 1.0, step: 1.0, label: 'Color Mode (Orig/Flat)' },
+            fgColor: { type: 'color', default: '#00ff66', label: 'FG Color' },
+            bgColor: { type: 'color', default: '#000000', label: 'BG Color' },
+            intensity: { type: 'float', default: 1.0, min: 0.0, max: 1.0, step: 0.01, label: 'Effect Mix' },
+            blendAmount: { type: 'float', default: 1.0, min: 0, max: 1, step: 0.01, label: 'Mix / Blend' },
+        },
+        shaderKey: 'ascii',
+    },
+
+    asciiV2: {
+        type: 'asciiV2',
+        label: 'ASCII v2',
+        category: 'image',
+        inputs: [
+            { id: 'in', label: 'Image', type: HandleTypes.IMAGE },
+            { id: 'texture', label: 'Overlay Tex', type: HandleTypes.IMAGE, optional: true },
+        ],
+        outputs: [
+            { id: 'out', label: 'Image', type: HandleTypes.IMAGE }
+        ],
+        params: {
+            cellSize: { type: 'float', default: 12.0, min: 4.0, max: 64.0, step: 1.0, label: 'Cell Size' },
+            brightness: { type: 'float', default: 0.0, min: -0.5, max: 0.5, step: 0.01, label: 'Brightness' },
+            colorMode: { type: 'select', default: 'Palette', options: ['Palette', 'Original', 'Flat'], label: 'Color Mode' },
+            fgColor: { type: 'color', default: '#00ff66', label: 'FG Color' },
+            bgColor: { type: 'color', default: '#000000', label: 'BG Color' },
+            extendedPalette: { type: 'bool', default: false, label: 'Extended Chars' },
+            intensity: { type: 'float', default: 1.0, min: 0.0, max: 1.0, step: 0.01, label: 'Intensity' },
+            blendAmount: { type: 'float', default: 1.0, min: 0.0, max: 1.0, step: 0.01, label: 'Blend' },
+        },
+        shaderKey: 'asciiV2',
     },
 
     motionBlur: {
@@ -506,6 +620,23 @@ const NODE_DEFS = {
         ],
         params: {
             mode: { type: 'select', default: 'rising', options: ['rising', 'falling', 'both'], label: 'Edge' }
+        },
+        shaderKey: null,
+    },
+
+    changeTrigger: {
+        type: 'changeTrigger',
+        label: 'Change -> Bang',
+        category: 'trigger',
+        compact: true,
+        inputs: [
+            { id: 'in', label: 'Value', type: HandleTypes.FLOAT }
+        ],
+        outputs: [
+            { id: 'out', label: 'Trigger', type: HandleTypes.TRIGGER }
+        ],
+        params: {
+            threshold: { type: 'float', default: 0.1, min: 0.001, max: 100, step: 0.001, label: 'Threshold' }
         },
         shaderKey: null,
     },

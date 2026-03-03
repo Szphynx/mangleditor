@@ -5,16 +5,70 @@
       { 'flow-node--selected': selected },
       { 'flow-node--compact': def.compact },
       { 'flow-node--bypassed': params._bypass },
+      { 'flow-node--collapsed': params._collapsed },
+      { 'flow-node--resizable': !params._collapsed && ['preview', 'knob', 'imageInput', 'webcamInput'].includes(nodeType) && params._resizable }
     ]"
     @click="$emit('select')"
+    @dblclick.stop="$emit('paramChange', '_collapsed', !params._collapsed)"
   >
+    <NodeResizer
+      v-if="['preview', 'knob', 'imageInput', 'webcamInput'].includes(nodeType) && params._resizable"
+      :min-width="60"
+      :min-height="60"
+      :max-width="540"
+      :max-height="540"
+      :keep-aspect-ratio="true"
+      :is-visible="selected"
+      class="nodrag"
+    />
     <!-- Header -->
-    <div class="flow-node__header">
+    <div class="flow-node__header" :title="collapsedTooltip">
+      <!-- In Badge -->
+      <span v-if="params._collapsed && connectedInputs.length > 0" class="flow-node__collapsed-badge flow-node__collapsed-badge--in">
+        [{{ connectedInputs.length }}]
+      </span>
+
       <div
         class="flow-node__category-dot"
         :style="{ background: categoryColor }"
       ></div>
       <div class="flow-node__title">{{ def.label }}</div>
+      
+      <!-- Out Badge (shows on right side) -->
+      <span v-if="params._collapsed && connectedOutputs.length > 0" class="flow-node__collapsed-badge flow-node__collapsed-badge--out">
+        [{{ connectedOutputs.length }}]
+      </span>
+      <!-- Randomize button -->
+      <button
+        v-if="hasRandomizableParams"
+        class="flow-node__bypass-btn"
+        style="margin-right: 4px;"
+        @click.stop="randomizeParams"
+        title="Randomize Parameters"
+      >
+        🎲
+      </button>
+      <!-- Collapse toggle -->
+      <button
+        class="flow-node__bypass-btn"
+        :class="{ 'flow-node__bypass-btn--active': params._collapsed }"
+        style="margin-right: 4px;"
+        @click.stop="$emit('paramChange', '_collapsed', !params._collapsed)"
+        :title="params._collapsed ? 'Expand Node' : 'Collapse Node'"
+      >
+        {{ params._collapsed ? '▼' : '▬' }}
+      </button>
+      <!-- Resize toggle -->
+      <button
+        v-if="!params._collapsed && ['preview', 'knob', 'imageInput', 'webcamInput'].includes(nodeType)"
+        class="flow-node__bypass-btn"
+        :class="{ 'flow-node__bypass-btn--active': params._resizable }"
+        style="margin-right: 4px;"
+        @click.stop="$emit('paramChange', '_resizable', !params._resizable)"
+        :title="params._resizable ? 'Disable Resizing' : 'Enable Resizing'"
+      >
+        ⤢
+      </button>
       <!-- Bypass button -->
       <button
         v-if="def.shaderKey || def.category === 'image' || def.category === 'uv'"
@@ -75,8 +129,8 @@
       </div>
 
       <!-- Special content per node type -->
-
-      <!-- Image Input / UI Image Slot -->
+      <template v-if="!params._collapsed">
+        <!-- Image Input / UI Image Slot -->
       <div v-if="nodeType === 'imageInput' || nodeType === 'uiImageSlot'" class="flow-node__controls" @pointerdown.stop @mousedown.stop>
         <input ref="fileInput" type="file" accept="image/*" class="file-input-hidden" @change="onFileSelect" />
         <div
@@ -144,6 +198,18 @@
         <div class="flow-node__slider-value">
           {{ (params.value ?? 0.5).toFixed(3) }}
         </div>
+      </div>
+
+      <!-- Knob node -->
+      <div v-if="nodeType === 'knob'" class="flow-node__knob-container" @pointerdown.stop @mousedown.stop>
+        <KnobControl
+          :modelValue="params.value ?? (def.params.value ? def.params.value.default : 0.5)"
+          :min="params.min ?? (def.params.min ? def.params.min.default : 0)"
+          :max="params.max ?? (def.params.max ? def.params.max.default : 1)"
+          :step="params.step ?? (def.params.step ? def.params.step.default : 0.01)"
+          :size="null"
+          @update:modelValue="$emit('paramChange', 'value', $event)"
+        />
       </div>
 
       <!-- LFO inline params preview -->
@@ -217,6 +283,7 @@
         ></canvas>
         <div class="flow-node__preview-label">Preview Node</div>
       </div>
+      </template>
 
       <!-- Output Handles -->
       <div class="flow-node__handles">
@@ -250,9 +317,11 @@
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { Handle, Position } from '@vue-flow/core'
+import { NodeResizer } from '@vue-flow/node-resizer'
 import { getTypeColor } from '../engine/typeSystem.js'
 import { NODE_CATEGORIES } from '../engine/nodeRegistry.js'
 import { useGraphStore } from '../stores/graphStore.js'
+import KnobControl from './KnobControl.vue'
 
 const props = defineProps({
   nodeId: { type: String, required: true },
@@ -271,9 +340,71 @@ const emit = defineEmits(['select', 'imageLoaded', 'export', 'trigger', 'paramCh
 
 const store = useGraphStore()
 
+const connectedInputs = computed(() => {
+  const edgesToMe = store.edges.filter(e => e.target === props.nodeId)
+  return [...new Set(edgesToMe.map(e => e.targetHandle))]
+})
+
+const connectedOutputs = computed(() => {
+  const edgesFromMe = store.edges.filter(e => e.source === props.nodeId)
+  return [...new Set(edgesFromMe.map(e => e.sourceHandle))]
+})
+
+const collapsedTooltip = computed(() => {
+  if (!props.params._collapsed) return ''
+  let text = 'INPUTS\n'
+  if (connectedInputs.value.length === 0) text += '  (none)\n'
+  else {
+    for (const handleId of connectedInputs.value) {
+      const inputDef = props.def.inputs.find(i => i.id === handleId)
+      const label = inputDef ? inputDef.label : handleId
+      const val = props.inputValues[handleId]
+      text += `• ${label}: ${val !== undefined ? formatInlineValue(val) : '—'}\n`
+    }
+  }
+  
+  text += '\nOUTPUTS\n'
+  if (connectedOutputs.value.length === 0) text += '  (none)\n'
+  else {
+    for (const outId of connectedOutputs.value) {
+      const outDef = props.def.outputs.find(o => o.id === outId)
+      const label = outDef ? outDef.label : outId
+      const val = props.outputValues[outId]
+      text += `• ${label}: ${val !== undefined ? formatInlineValue(val) : '—'}\n`
+    }
+  }
+  return text
+})
+
 const categoryColor = computed(() => {
   return NODE_CATEGORIES[props.def.category]?.color || '#888'
 })
+
+const hasRandomizableParams = computed(() => {
+  if (!props.def.params) return false
+  return Object.values(props.def.params).some(p => p.type === 'float' || p.type === 'int')
+})
+
+function randomizeParams() {
+  if (!props.def.params) return
+  for (const [key, paramDef] of Object.entries(props.def.params)) {
+    if (paramDef.type === 'float' || paramDef.type === 'int') {
+      const defaultMin = key === 'value' && props.params.min !== undefined ? props.params.min : (paramDef.min !== undefined ? paramDef.min : 0)
+      const defaultMax = key === 'value' && props.params.max !== undefined ? props.params.max : (paramDef.max !== undefined ? paramDef.max : 1)
+      
+      const min = props.params[`_randMin_${key}`] ?? defaultMin
+      const max = props.params[`_randMax_${key}`] ?? defaultMax
+      
+      let randomVal = min + Math.random() * (max - min)
+      if (paramDef.type === 'int') {
+        randomVal = Math.floor(randomVal)
+      } else if (paramDef.step) {
+         randomVal = Math.round(randomVal / paramDef.step) * paramDef.step
+      }
+      emit('paramChange', key, randomVal)
+    }
+  }
+}
 
 // Image Input state
 const fileInput = ref(null)

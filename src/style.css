@@ -3,6 +3,7 @@
    ============================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import '@vue-flow/node-resizer/dist/style.css';
 
 :root {
   /* Background tones */
@@ -438,6 +439,123 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   transition: box-shadow var(--transition-normal), border-color var(--transition-normal);
   overflow: visible;
+  display: flex;
+  flex-direction: column;
+}
+
+.flow-node--resizable {
+  width: 100%;
+  height: 100%;
+}
+
+.flow-node--collapsed {
+  min-width: unset;
+  border-radius: 20px;
+}
+
+.flow-node--collapsed .flow-node__header {
+  border-bottom: none;
+  padding: 6px 12px;
+  border-radius: 20px;
+}
+
+.flow-node--collapsed .flow-node__handles {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.flow-node--collapsed .flow-node__handle-row {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0;
+}
+
+.flow-node--collapsed .flow-node__handle-row--input {
+  left: 0;
+}
+
+.flow-node--collapsed .flow-node__handle-row--output {
+  right: 0;
+  justify-content: flex-end;
+}
+
+.flow-node--collapsed .flow-node__handle-label,
+.flow-node--collapsed .flow-node__handle-type,
+.flow-node--collapsed .flow-node__handle-value,
+.flow-node--collapsed .flow-node__category-dot,
+.flow-node--collapsed .flow-node__bypass-btn:not([title="Expand Node"]) {
+  display: none !important;
+}
+
+.flow-node--collapsed .flow-node__title {
+  text-align: center;
+  padding-right: 4px;
+  /* Room for expand button */
+}
+
+.flow-node__collapsed-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 600;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+}
+
+.flow-node__collapsed-badge--in {
+  margin-right: 4px;
+}
+
+.flow-node__collapsed-badge--out {
+  margin-left: 4px;
+}
+
+.flow-node--collapsed .vue-flow__handle {
+  pointer-events: all;
+  transform: scale(0.8);
+}
+
+.flow-node--resizable .flow-node__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.flow-node--resizable .flow-node__controls,
+.flow-node--resizable .flow-node__preview-inline,
+.flow-node--resizable .flow-node__image-preview-container,
+.flow-node--resizable .flow-node__knob-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.flow-node--resizable .flow-node__preview-canvas,
+.flow-node--resizable .flow-node__image-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  min-height: 0;
+  min-width: 0;
+  flex: 1;
+}
+
+.flow-node--resizable .flow-node__knob-container {
+  padding: 12px;
 }
 
 .flow-node:hover {
@@ -736,11 +854,13 @@ body {
 .param-field__number-input::-webkit-outer-spin-button,
 .param-field__number-input::-webkit-inner-spin-button {
   -webkit-appearance: none;
+  appearance: none;
   margin: 0;
 }
 
 .param-field__number-input[type=number] {
   -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 .param-field__input {
@@ -793,6 +913,43 @@ body {
   font-size: 10px;
   color: var(--text-muted);
   font-family: 'JetBrains Mono', monospace;
+}
+
+.param-field__random-bounds-card {
+  margin-top: 8px;
+  background: rgba(30, 30, 42, 0.6);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-sm);
+  padding: 8px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.param-field__random-bounds-header {
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.param-field__random-bounds-inputs {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.param-field__random-bounds-card .param-field__number-input {
+  width: 50px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-node);
+}
+
+.param-field__random-bounds-card .param-field__number-input:focus {
+  border-color: var(--accent-primary);
 }
 
 .param-field__header {
