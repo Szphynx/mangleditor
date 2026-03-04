@@ -304,7 +304,7 @@
       <!-- Output Handles -->
       <div class="flow-node__handles">
         <div
-          v-for="output in def.outputs"
+          v-for="output in dynamicOutputs"
           :key="'out-' + output.id"
           class="flow-node__handle-row flow-node__handle-row--output"
         >
@@ -364,6 +364,10 @@ const connectedInputs = computed(() => {
 const connectedOutputs = computed(() => {
   const edgesFromMe = store.edges.filter(e => e.source === props.nodeId)
   return [...new Set(edgesFromMe.map(e => e.sourceHandle))]
+})
+
+const dynamicOutputs = computed(() => {
+  return store.getNodeOutputs(props.nodeId)
 })
 
 const collapsedTooltip = computed(() => {

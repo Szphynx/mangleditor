@@ -1,5 +1,11 @@
 <template>
-  <div class="param-panel">
+  <div class="param-panel" :class="{ 'param-panel--collapsed': collapsed }">
+    <!-- Collapse toggle header -->
+    <div class="param-panel__collapse-bar" @click="collapsed = !collapsed" :title="collapsed ? 'Expand inspector' : 'Collapse inspector'">
+      <span v-show="!collapsed" class="param-panel__collapse-label">Inspector</span>
+      <span class="param-panel__collapse-btn">{{ collapsed ? '‹' : '›' }}</span>
+    </div>
+    <template v-if="!collapsed">
     <template v-if="store.selectedNode">
       <div class="param-panel__header">
         <div
@@ -185,6 +191,7 @@
     <div v-else class="param-panel__empty">
       Select a node to edit its parameters
     </div>
+    </template>
   </div>
 </template>
 
@@ -195,6 +202,7 @@ import { NODE_CATEGORIES } from '../engine/nodeRegistry.js'
 
 const store = useGraphStore()
 const expandedRnd = ref({})
+const collapsed = ref(window.innerWidth < 768) // auto-collapse on mobile
 
 const def = computed(() => store.selectedNodeDef || { label: '', type: '', params: {}, inputs: [], outputs: [], category: '' })
 const params = computed(() => store.selectedNodeParams)

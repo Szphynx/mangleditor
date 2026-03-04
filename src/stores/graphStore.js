@@ -161,6 +161,15 @@ export const useGraphStore = defineStore('graph', () => {
             }
         }
 
+        // Get dynamic source handle type (for Sliders whose outputType can change)
+        if (sourceDef && sourceHandle) {
+            const dynamicOutputs = getNodeOutputs(connection.source)
+            const dynamicHandle = dynamicOutputs.find(o => o.id === connection.sourceHandle)
+            if (dynamicHandle) {
+                sourceHandle = dynamicHandle
+            }
+        }
+
         if (!sourceHandle || !targetHandle) return false
 
         // Type check
@@ -198,7 +207,42 @@ export const useGraphStore = defineStore('graph', () => {
      */
     function setParam(nodeId, key, value) {
         if (!nodeParams[nodeId]) nodeParams[nodeId] = {}
+        const prevValue = nodeParams[nodeId][key]
         nodeParams[nodeId][key] = value
+
+        // If a Slider changes outputType, validate existing outgoing cables
+        if (key === 'outputType') {
+            const node = nodes.value.find(n => n.id === nodeId)
+            if (node && node.type === 'slider' && prevValue !== value) {
+                const dynamicOutputs = getNodeOutputs(nodeId)
+                const newOutType = dynamicOutputs.find(o => o.id === 'out')?.type
+
+                let edgesRemoved = false
+                edges.value = edges.value.filter(e => {
+                    if (e.source !== nodeId) return true // Keep other edges
+
+                    const targetNode = nodes.value.find(n => n.id === e.target)
+                    const targetDef = targetNode ? getNodeDef(targetNode.type) : null
+                    let targetType = targetDef?.inputs?.find(i => i.id === e.targetHandle)?.type
+
+                    if (!targetType && exposedParams[e.target]?.[e.targetHandle]) {
+                        const pDef = targetDef?.params?.[e.targetHandle]
+                        targetType = pDef?.type === 'int' ? HandleTypes.INT : HandleTypes.FLOAT
+                    }
+
+                    if (targetType && !isConnectionValid(newOutType, targetType)) {
+                        console.warn(`Disconnecting edge from ${nodeId} to ${e.target} due to type mismatch.`)
+                        edgesRemoved = true
+                        return false // Drop edge
+                    }
+                    return true
+                })
+
+                if (edgesRemoved) {
+                    window.alert("One or more cables were disconnected because the data type changed and they are no longer compatible.")
+                }
+            }
+        }
     }
 
     /**
@@ -244,6 +288,28 @@ export const useGraphStore = defineStore('graph', () => {
                 return { id: key, label: paramDef.label, type: htype }
             })
             .filter(Boolean)
+    }
+
+    /**
+     * Get dynamically typed outputs for a given node
+     */
+    function getNodeOutputs(nodeId) {
+        const node = nodes.value.find(n => n.id === nodeId)
+        if (!node) return []
+        const def = getNodeDef(node.type)
+        if (!def || !def.outputs) return []
+
+        // Create a shallow copy of outputs so we can modify handle types safely
+        const dynamicOutputs = def.outputs.map(o => ({ ...o }))
+
+        if (node.type === 'slider') {
+            const outType = nodeParams[nodeId]?.outputType || 'float'
+            const outHandle = dynamicOutputs.find(o => o.id === 'out')
+            if (outHandle) {
+                outHandle.type = outType === 'int' ? HandleTypes.INT : HandleTypes.FLOAT
+            }
+        }
+        return dynamicOutputs
     }
 
     /**
@@ -609,6 +675,10 @@ export const useGraphStore = defineStore('graph', () => {
                 if (isExposed && !bound.has(`${nodeId}::${paramKey}`) && !isParamConnected(nodeId, paramKey)) {
                     const node = nodes.value.find(n => n.id === nodeId)
                     const def = node ? getNodeDef(node.type) : null
+
+                    // Exclude passthrough nodes like NumberMonitor from becoming perf controls
+                    if (def?.isPassthrough) continue
+
                     const paramDef = def?.params?.[paramKey]
                     result.push({
                         nodeId,
