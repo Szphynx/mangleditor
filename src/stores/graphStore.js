@@ -533,7 +533,18 @@ export const useGraphStore = defineStore('graph', () => {
         perfGridCells.value = perfGridCells.value.filter(c => c.id !== cellId)
     }
 
+    /**
+     * Check if a specific parameter on a node already has an incoming connection (edge)
+     */
+    function isParamConnected(nodeId, paramKey) {
+        return edges.value.some(e => e.target === nodeId && e.targetHandle === paramKey)
+    }
+
     function bindPerfCell(cellId, nodeId, paramKey) {
+        if (isParamConnected(nodeId, paramKey)) {
+            console.warn(`Cannot bind perf cell to ${nodeId}.${paramKey} because it is already modulated by a node connection.`)
+            return
+        }
         const cell = perfGridCells.value.find(c => c.id === cellId)
         if (cell) {
             cell.boundNodeId = nodeId
@@ -595,7 +606,7 @@ export const useGraphStore = defineStore('graph', () => {
         const result = []
         for (const [nodeId, params] of Object.entries(exposedParams)) {
             for (const [paramKey, isExposed] of Object.entries(params)) {
-                if (isExposed && !bound.has(`${nodeId}::${paramKey}`)) {
+                if (isExposed && !bound.has(`${nodeId}::${paramKey}`) && !isParamConnected(nodeId, paramKey)) {
                     const node = nodes.value.find(n => n.id === nodeId)
                     const def = node ? getNodeDef(node.type) : null
                     const paramDef = def?.params?.[paramKey]
