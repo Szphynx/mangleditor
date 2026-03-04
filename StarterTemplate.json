@@ -345,14 +345,6 @@
       "nickname": "Bright"
     },
     {
-      "id": "perf_3_starter3",
-      "controlType": "knob",
-      "boundNodeId": "node_14_mmaof9bk",
-      "boundParamKey": "decay",
-      "gridOrder": 2,
-      "nickname": "Feedback"
-    },
-    {
       "id": "perf_4_starter4",
       "controlType": "knob",
       "boundNodeId": "node_18_mmaop3vp",
