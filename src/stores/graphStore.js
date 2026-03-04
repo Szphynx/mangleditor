@@ -322,6 +322,7 @@ export const useGraphStore = defineStore('graph', () => {
             })),
             params: { ...nodeParams },
             exposedParams: { ...exposedParams },
+            perfGridCells: perfGridCells.value.map(c => ({ ...c })),
             settings: {
                 previewMode: previewMode.value,
             },
@@ -391,6 +392,20 @@ export const useGraphStore = defineStore('graph', () => {
             // Restore edges
             for (const e of data.edges) {
                 edges.value.push(e)
+            }
+
+            // Restore perfGridCells
+            if (data.perfGridCells) {
+                perfGridCells.value = data.perfGridCells.map(c => ({ ...c }))
+                // Update counter
+                const maxPerfId = data.perfGridCells.reduce((max, c) => {
+                    const match = c.id.match(/perf_(\d+)_/)
+                    return match ? Math.max(max, parseInt(match[1])) : max
+                }, 0)
+                perfCellIdCounter = maxPerfId
+            } else {
+                perfGridCells.value = []
+                perfCellIdCounter = 0
             }
 
             // Restore settings
