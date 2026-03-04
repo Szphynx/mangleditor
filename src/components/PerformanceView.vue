@@ -48,7 +48,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useGraphStore } from '../stores/graphStore.js'
 import ControlDrawer from './ControlDrawer.vue'
 
@@ -202,6 +202,25 @@ watch(showHistogram, (show) => {
     clearInterval(histInterval)
   }
 }, { immediate: true })
+
+// Auto-fit on mount and whenever orientation / window size changes
+function onResize() {
+  // Small delay to let the browser finish the layout after rotation
+  setTimeout(() => fitView(), 100)
+}
+
+onMounted(async () => {
+  await nextTick()
+  fitView()
+  window.addEventListener('resize', onResize)
+  window.addEventListener('orientationchange', onResize)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', onResize)
+  window.removeEventListener('orientationchange', onResize)
+  clearInterval(histInterval)
+})
 
 defineExpose({ perfCanvasRef })
 </script>
