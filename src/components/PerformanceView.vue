@@ -22,6 +22,7 @@
 
     <!-- Stats / toolbar bar -->
     <div class="perf-view__toolbar">
+      <span class="perf-view__badge mono">v{{ pkg.version }}</span>
       <span class="perf-view__badge mono">{{ resolution }}</span>
       <span class="perf-view__badge perf-view__fps mono" :class="{ 'perf-view__fps--ok': fps >= 50 }">{{ fps }} FPS</span>
 
@@ -51,6 +52,7 @@
 import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useGraphStore } from '../stores/graphStore.js'
 import ControlDrawer from './ControlDrawer.vue'
+import pkg from '../../package.json'
 
 const props = defineProps({
   fps: { type: Number, default: 0 },
