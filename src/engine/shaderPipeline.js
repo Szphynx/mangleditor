@@ -198,7 +198,7 @@ export class ShaderPipeline {
         // UV-category shaders warp coordinates before sampling — they should never
         // have blend injection applied, as they have no blendAmount param and
         // the default of 0.0 would make them invisible.
-        const NO_BLEND_KEYS = new Set(['passthrough', 'feedback', 'uvTransform', 'uvPolar', 'uvRepeat', 'uvGlitch', 'uvGenerator'])
+        const NO_BLEND_KEYS = new Set(['passthrough', 'feedback', 'uvTransform', 'uvPolar', 'uvRepeat', 'uvGlitch', 'uvGenerator', 'textureSampler'])
         if (!NO_BLEND_KEYS.has(shaderKey)) {
             const hasUIn = fragSource.includes('uniform sampler2D uIn;')
             const hasUTexture = fragSource.includes('uniform sampler2D uTexture;')
