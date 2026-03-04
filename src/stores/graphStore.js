@@ -27,6 +27,13 @@ export const useGraphStore = defineStore('graph', () => {
     const bgOpacity = ref(0.0)          // Opacity of the background preview
     const showShadows = ref(true)       // Toggle for flow-node and edge dropshadows
 
+    // ---- Performance Mode State ----
+    const isPerformanceMode = ref(false)
+    const isPerfEditMode = ref(false)    // Lock/Unlock within performance mode
+    // perfGridCells: [{ id, controlType, boundNodeId, boundParamKey, gridOrder }]
+    const perfGridCells = ref([])
+    let perfCellIdCounter = 0
+
     // Data outputs from evaluator — set by App.vue each frame
     const dataOutputs = ref({})
 
@@ -467,9 +474,134 @@ export const useGraphStore = defineStore('graph', () => {
      */
     function triggerButton(nodeId) {
         const node = nodes.value.find(n => n.id === nodeId)
-        if (node && node.type === 'button') {
+        if (node && (node.type === 'button' || node.type === 'bang')) {
             node._triggered = true
         }
+    }
+
+    // ---- Performance Mode Actions ----
+    function togglePerformanceMode() {
+        isPerformanceMode.value = !isPerformanceMode.value
+        if (!isPerformanceMode.value) isPerfEditMode.value = false
+    }
+
+    function togglePerfEditMode() {
+        isPerfEditMode.value = !isPerfEditMode.value
+    }
+
+    function addPerfCell(controlType) {
+        const id = `perf_${++perfCellIdCounter}_${Date.now().toString(36)}`
+        perfGridCells.value = [...perfGridCells.value, {
+            id,
+            controlType,
+            boundNodeId: null,       // The source node (e.g., LFO node, or knob node)
+            boundParamKey: null,     // For controls: param on boundNodeId. For anim: target param key.
+            boundTargetNodeId: null, // For anim cells: target node to write output to
+            // XY Pad dual-axis:
+            boundParamKeyY: null,
+            boundTargetNodeIdY: null,
+            nickname: '',            // User-assigned nickname
+            gridOrder: perfGridCells.value.length,
+        }]
+        return id
+    }
+
+    function removePerfCell(cellId) {
+        const cell = perfGridCells.value.find(c => c.id === cellId)
+        if (cell) {
+            // Cascade delete: if this is an animation/device node spawned from perf mode, also remove from graph
+            const ANIM_TYPES = ['lfo', 'timer', 'damper', 'fft', 'accelerometer', 'xypad']
+            if (ANIM_TYPES.includes(cell.controlType) && cell.boundNodeId) {
+                removeNode(cell.boundNodeId)
+            }
+        }
+        perfGridCells.value = perfGridCells.value.filter(c => c.id !== cellId)
+    }
+
+    function bindPerfCell(cellId, nodeId, paramKey) {
+        const cell = perfGridCells.value.find(c => c.id === cellId)
+        if (cell) {
+            cell.boundNodeId = nodeId
+            cell.boundParamKey = paramKey
+        }
+    }
+
+    /** Bind an animation cell's output to a target param */
+    function bindPerfCellTarget(cellId, targetNodeId, targetParamKey) {
+        const cell = perfGridCells.value.find(c => c.id === cellId)
+        if (cell) {
+            cell.boundTargetNodeId = targetNodeId
+            cell.boundParamKey = targetParamKey
+        }
+    }
+
+    /** Bind XY Pad Y axis to a target param */
+    function bindPerfCellTargetY(cellId, targetNodeId, targetParamKey) {
+        const cell = perfGridCells.value.find(c => c.id === cellId)
+        if (cell) {
+            cell.boundTargetNodeIdY = targetNodeId
+            cell.boundParamKeyY = targetParamKey
+        }
+    }
+
+    /** Set nickname for a perf cell */
+    function setPerfCellNickname(cellId, nickname) {
+        const cell = perfGridCells.value.find(c => c.id === cellId)
+        if (cell) cell.nickname = nickname
+    }
+
+    function reorderPerfCells(fromIdx, toIdx) {
+        const cells = [...perfGridCells.value]
+        const [moved] = cells.splice(fromIdx, 1)
+        cells.splice(toIdx, 0, moved)
+        perfGridCells.value = cells
+    }
+
+    /**
+     * Get all exposed params that are NOT already bound to a perf cell.
+     */
+    function getUnboundExposedParams() {
+        // Collect ALL bound param keys — from standard controls AND animation targets
+        const bound = new Set()
+        for (const c of perfGridCells.value) {
+            // Standard controls
+            if (c.boundNodeId && c.boundParamKey && !c.boundTargetNodeId) {
+                bound.add(`${c.boundNodeId}::${c.boundParamKey}`)
+            }
+            // Animation/device targets
+            if (c.boundTargetNodeId && c.boundParamKey) {
+                bound.add(`${c.boundTargetNodeId}::${c.boundParamKey}`)
+            }
+            // XY Pad Y-axis target
+            if (c.boundTargetNodeIdY && c.boundParamKeyY) {
+                bound.add(`${c.boundTargetNodeIdY}::${c.boundParamKeyY}`)
+            }
+        }
+        const result = []
+        for (const [nodeId, params] of Object.entries(exposedParams)) {
+            for (const [paramKey, isExposed] of Object.entries(params)) {
+                if (isExposed && !bound.has(`${nodeId}::${paramKey}`)) {
+                    const node = nodes.value.find(n => n.id === nodeId)
+                    const def = node ? getNodeDef(node.type) : null
+                    const paramDef = def?.params?.[paramKey]
+                    result.push({
+                        nodeId,
+                        paramKey,
+                        nodeLabel: def?.label || node?.type || nodeId,
+                        paramLabel: paramDef?.label || paramKey,
+                    })
+                }
+            }
+        }
+        return result
+    }
+
+    /**
+     * Get control-type nodes (knob, slider, bang, toggle, button) for performance grid.
+     */
+    function getControlNodes() {
+        const controlTypes = ['knob', 'slider', 'bang', 'button', 'toggle']
+        return nodes.value.filter(n => controlTypes.includes(n.type))
     }
 
     return {
@@ -519,5 +651,25 @@ export const useGraphStore = defineStore('graph', () => {
         toggleExposeParam,
         isParamExposed,
         getExposedHandles,
+
+        // Performance Mode
+        isPerformanceMode,
+        isPerfEditMode,
+        perfGridCells,
+        togglePerformanceMode,
+        togglePerfEditMode,
+        addPerfCell,
+        removePerfCell,
+        bindPerfCell,
+        bindPerfCellTarget,
+        bindPerfCellTargetY,
+        setPerfCellNickname,
+        reorderPerfCells,
+        getUnboundExposedParams,
+        getControlNodes,
+
+        // Utility
+        bgOpacity,
+        showShadows,
     }
 })

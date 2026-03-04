@@ -1,7 +1,7 @@
 {
   "version": 1,
   "title": "webcam asciii example",
-  "timestamp": 1772547860798,
+  "timestamp": 1772632464983,
   "nodes": [
     {
       "id": "node_4_mm9uzcic",
@@ -106,6 +106,14 @@
         "x": 3360.8005864062206,
         "y": 123.97556894402047
       }
+    },
+    {
+      "id": "node_24_mmc3l9a3",
+      "type": "onStart",
+      "position": {
+        "x": -430.92950122027275,
+        "y": -917.8409834844979
+      }
     }
   ],
   "edges": [
@@ -206,6 +214,13 @@
       "sourceHandle": "out",
       "target": "node_18_mmaop3vp",
       "targetHandle": "intensity"
+    },
+    {
+      "id": "e_node_24_mmc3l9a3_out-node_6_mm9wkur1_trigger",
+      "source": "node_24_mmc3l9a3",
+      "sourceHandle": "out",
+      "target": "node_6_mm9wkur1",
+      "targetHandle": "trigger"
     }
   ],
   "params": {
@@ -227,7 +242,10 @@
       "taper": 2.2,
       "blendAmount": 1
     },
-    "node_6_mm9wkur1": {},
+    "node_6_mm9wkur1": {
+      "enable": false,
+      "trigger": 0
+    },
     "node_7_mm9wm7i1": {
       "cellSize": 20,
       "brightness": 0.5,
@@ -288,9 +306,9 @@
       "threshold": 0.57,
       "upperThreshold": 0.75,
       "reverse": true,
-      "blendAmount": 1,
-      "_collapsed": false
-    }
+      "blendAmount": 1
+    },
+    "node_24_mmc3l9a3": {}
   },
   "exposedParams": {
     "node_11_mm9xey6t": {

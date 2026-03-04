@@ -162,19 +162,52 @@ export function evaluateDataNodes(sortedIds, nodes, edges, nodeParams, time, del
             }
 
             case 'random': {
-                const min = params.min ?? 0
-                const max = params.max ?? 1
+                const rMin = params.min ?? 0
+                const rMax = params.max ?? 1
                 const seed = params.seed ?? 42
-                // Seeded pseudo-random using sin
-                const s = Math.sin(seed + time * 100) * 43758.5453
-                const r = s - Math.floor(s)
-                result.out = min + r * (max - min)
+                const interval = params.triggerInterval ?? 0.5
+                const damping = Math.max(0, Math.min(0.999, params.damping ?? 0)) // Clamp to safe range
+
+                // Check if external trigger cable is connected
+                const triggerIn = inputs.trigger?.value ?? 0
+                const hasExternalTrigger = edges.some(e => e.target === nodeId && e.targetHandle === 'trigger')
+                const prevTrigger = node._prevRandTrigger ?? 0
+
+                // Determine if we should fire a new random value
+                let shouldFire = false
+                if (hasExternalTrigger) {
+                    // External trigger only: fire on rising edge
+                    if (triggerIn > 0 && prevTrigger <= 0) shouldFire = true
+                    node._prevRandTrigger = triggerIn
+                } else {
+                    // Self-trigger at interval
+                    const lastFire = node._lastFireTime ?? -interval
+                    if (time - lastFire >= interval) shouldFire = true
+                }
+
+                if (shouldFire || node._randTarget === undefined) {
+                    // Generate new random target
+                    node._randSeedCounter = (node._randSeedCounter ?? 0) + 1
+                    const s = Math.sin(seed + node._randSeedCounter * 12.9898) * 43758.5453
+                    const r = s - Math.floor(s)
+                    node._randTarget = rMin + r * (rMax - rMin)
+                    node._lastFireTime = time
+                }
+
+                // Apply damping: smooth toward target
+                const prev = node._randCurrentValue ?? node._randTarget
+                if (damping > 0) {
+                    node._randCurrentValue = prev + (node._randTarget - prev) * (1 - damping)
+                } else {
+                    node._randCurrentValue = node._randTarget
+                }
+                result.out = node._randCurrentValue
                 break
             }
 
             case 'damper': {
                 const target = inputs.target?.value ?? 0
-                const smoothing = params.smoothing ?? 0.9
+                const smoothing = Math.max(0, Math.min(0.999, params.smoothing ?? 0.9)) // Clamp to safe range
                 // Store current value in node state
                 const prev = node._damperValue ?? target
                 const v = prev + (target - prev) * (1 - smoothing)
@@ -266,6 +299,37 @@ export function evaluateDataNodes(sortedIds, nodes, edges, nodeParams, time, del
 
             case 'webcamInput': {
                 result.trigger = inputs.trigger?.value ?? 0
+                break
+            }
+
+            case 'accelerometer': {
+                const sens = params.sensitivity ?? 1.0
+                const smooth = params.smoothing ?? 0.5
+                // Read from device state (stored on node)
+                const rawX = node._accelX ?? 0
+                const rawY = node._accelY ?? 0
+                const rawZ = node._accelZ ?? 0
+                const prevX = node._smoothX ?? 0
+                const prevY = node._smoothY ?? 0
+                const prevZ = node._smoothZ ?? 0
+                node._smoothX = prevX + (rawX * sens - prevX) * (1 - smooth)
+                node._smoothY = prevY + (rawY * sens - prevY) * (1 - smooth)
+                node._smoothZ = prevZ + (rawZ * sens - prevZ) * (1 - smooth)
+                result.x = node._smoothX
+                result.y = node._smoothY
+                result.z = node._smoothZ
+                break
+            }
+
+            case 'xyPad': {
+                const rawX = params.x ?? 0.5
+                const rawY = params.y ?? 0.5
+                const minX = params.minX ?? 0
+                const maxX = params.maxX ?? 1
+                const minY = params.minY ?? 0
+                const maxY = params.maxY ?? 1
+                result.x = minX + rawX * (maxX - minX)
+                result.y = minY + rawY * (maxY - minY)
                 break
             }
 

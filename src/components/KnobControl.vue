@@ -1,5 +1,5 @@
 <template>
-  <div class="knob-control" @mousedown.stop.prevent="onMouseDown" @dblclick.stop="reset" :style="{ width: size ? size + 'px' : '100%', height: size ? size + 'px' : '100%' }">
+  <div class="knob-control" @mousedown.stop.prevent="onMouseDown" @touchstart.stop.prevent="onTouchStart" @dblclick.stop="reset" :style="{ width: size ? size + 'px' : '100%', height: size ? size + 'px' : '100%' }">
     <svg width="100%" height="100%" viewBox="0 0 100 100">
       <!-- Background track -->
       <path
@@ -85,6 +85,36 @@ const indicatorY = computed(() => polarToCartesian(50, 50, 24, currentAngle.valu
 let startY = 0
 let startVal = 0
 
+// --- Shared drag logic ---
+function applyDrag(clientY, shiftKey) {
+  const dy = startY - clientY
+  const mmin = props.min !== undefined ? props.min : 0
+  const mmax = props.max !== undefined ? props.max : 1
+  const range = (mmax - mmin) || 1
+
+  // Base sensitivity: 150 pixels of dragging covers the entire range
+  let sensitivity = range / 150
+
+  // Shift key for fine control (desktop only)
+  if (shiftKey) {
+    sensitivity *= 0.1
+  }
+
+  let newVal = startVal + (dy * sensitivity)
+  newVal = Math.max(mmin, Math.min(mmax, newVal))
+
+  if (props.step) {
+    newVal = Math.round(newVal / props.step) * props.step
+  }
+
+  // Format to avoid floating point imprecision
+  const decimals = props.step.toString().split('.')[1]?.length || 0
+  newVal = Number(newVal.toFixed(decimals))
+
+  emit('update:modelValue', newVal)
+}
+
+// --- Mouse events (desktop) ---
 function onMouseDown(e) {
   startY = e.clientY
   startVal = props.modelValue
@@ -93,36 +123,34 @@ function onMouseDown(e) {
 }
 
 function onMouseMove(e) {
-  const dy = startY - e.clientY
-  const mmin = props.min !== undefined ? props.min : 0
-  const mmax = props.max !== undefined ? props.max : 1
-  const range = (mmax - mmin) || 1
-  
-  // Base sensitivity: 100 pixels of dragging covers the entire range
-  let sensitivity = range / 150
-  
-  // Shift key for fine control
-  if (e.shiftKey) {
-    sensitivity *= 0.1
-  }
-
-  let newVal = startVal + (dy * sensitivity)
-  newVal = Math.max(mmin, Math.min(mmax, newVal))
-  
-  if (props.step) {
-    newVal = Math.round(newVal / props.step) * props.step
-  }
-  
-  // Format to avoid floating point imprecision
-  const decimals = props.step.toString().split('.')[1]?.length || 0
-  newVal = Number(newVal.toFixed(decimals))
-  
-  emit('update:modelValue', newVal)
+  applyDrag(e.clientY, e.shiftKey)
 }
 
 function onMouseUp() {
   document.removeEventListener('mousemove', onMouseMove)
   document.removeEventListener('mouseup', onMouseUp)
+}
+
+// --- Touch events (mobile) ---
+function onTouchStart(e) {
+  const t = e.touches[0]
+  startY = t.clientY
+  startVal = props.modelValue
+  document.addEventListener('touchmove', onTouchMove, { passive: false })
+  document.addEventListener('touchend', onTouchEnd)
+  document.addEventListener('touchcancel', onTouchEnd)
+}
+
+function onTouchMove(e) {
+  e.preventDefault() // prevent scroll while dragging knob
+  const t = e.touches[0]
+  applyDrag(t.clientY, false)
+}
+
+function onTouchEnd() {
+  document.removeEventListener('touchmove', onTouchMove)
+  document.removeEventListener('touchend', onTouchEnd)
+  document.removeEventListener('touchcancel', onTouchEnd)
 }
 
 function reset() {
@@ -146,6 +174,7 @@ const displayValue = computed(() => {
   user-select: none;
   cursor: ns-resize;
   border-radius: 4px;
+  touch-action: none; /* prevent browser scroll/zoom while interacting */
 }
 .knob-control:hover svg circle {
   fill: var(--bg-hover, #444);

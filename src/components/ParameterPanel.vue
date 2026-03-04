@@ -10,6 +10,18 @@
         <span class="param-panel__type">{{ def.type }}</span>
       </div>
 
+      <!-- Perf mode nickname -->
+      <div v-if="boundPerfCell" class="param-panel__nickname-row">
+        <label class="param-panel__nickname-label">Nickname</label>
+        <input
+          class="param-panel__nickname-input"
+          type="text"
+          :value="boundPerfCell.nickname || ''"
+          placeholder="Display name in Performance Mode"
+          @input="store.setPerfCellNickname(boundPerfCell.id, $event.target.value)"
+        />
+      </div>
+
       <div v-if="Object.keys(def.params).length > 0" class="param-panel__section">
         <div class="param-panel__section-title">Parameters</div>
 
@@ -188,6 +200,15 @@ const def = computed(() => store.selectedNodeDef || { label: '', type: '', param
 const params = computed(() => store.selectedNodeParams)
 const categoryColor = computed(() => NODE_CATEGORIES[def.value.category]?.color || '#888')
 
+/** Find a perf cell that is bound to the selected node (for nickname editing) */
+const boundPerfCell = computed(() => {
+  if (!store.selectedNodeId) return null
+  return store.perfGridCells.find(c =>
+    c.boundNodeId === store.selectedNodeId ||
+    c.boundTargetNodeId === store.selectedNodeId
+  ) || null
+})
+
 function onParamChange(key, value) {
   if (store.selectedNodeId) {
     store.setParam(store.selectedNodeId, key, value)
@@ -198,5 +219,42 @@ function formatValue(val, type) {
   if (type === 'int') return Math.round(val).toString()
   if (typeof val === 'number') return val.toFixed(3)
   return String(val)
+}</script>
+
+<style scoped>
+.param-panel__nickname-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px 8px 12px;
+  border-bottom: 1px solid var(--border-color, #2a2a3a);
 }
-</script>
+
+.param-panel__nickname-label {
+  font-size: 10px;
+  color: var(--text-muted, #888);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.param-panel__nickname-input {
+  flex: 1;
+  padding: 3px 6px;
+  border: 1px solid var(--border-color, #2a2a3a);
+  border-radius: 4px;
+  background: var(--bg-tertiary, #12121e);
+  color: var(--text-primary, #e0e0e0);
+  font-size: 11px;
+  outline: none;
+}
+
+.param-panel__nickname-input:focus {
+  border-color: var(--accent-primary, #00d4ff);
+}
+
+.param-panel__nickname-input::placeholder {
+  color: var(--text-muted, #555);
+  font-size: 10px;
+}
+</style>

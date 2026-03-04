@@ -478,7 +478,7 @@ const NODE_DEFS = {
         label: 'Random',
         category: 'animation',
         inputs: [
-            { id: 'reseed', label: 'Reseed', type: HandleTypes.TRIGGER, optional: true }
+            { id: 'trigger', label: 'Trigger', type: HandleTypes.TRIGGER, optional: true }
         ],
         outputs: [
             { id: 'out', label: 'Value', type: HandleTypes.FLOAT }
@@ -486,7 +486,8 @@ const NODE_DEFS = {
         params: {
             min: { type: 'float', default: 0, min: -1000, max: 1000, step: 0.01, label: 'Min' },
             max: { type: 'float', default: 1, min: -1000, max: 1000, step: 0.01, label: 'Max' },
-            mode: { type: 'select', default: 'continuous', options: ['continuous', 'onTrigger'], label: 'Mode' },
+            triggerInterval: { type: 'float', default: 0.5, min: 0.01, max: 30, step: 0.01, label: 'Self-Trigger (s)' },
+            damping: { type: 'float', default: 0, min: 0, max: 0.999, step: 0.001, label: 'Damping' },
             seed: { type: 'int', default: 42, min: 0, max: 99999, step: 1, label: 'Seed' },
         },
         shaderKey: null,
@@ -962,6 +963,46 @@ const NODE_DEFS = {
         params: {},
         shaderKey: 'passthrough', // Uses passthrough shader to copy image
         isPassthrough: true,
+    },
+
+    // ======================== DEVICE INPUT NODES ========================
+    accelerometer: {
+        type: 'accelerometer',
+        label: 'Accelerometer',
+        category: 'trigger',
+        compact: true,
+        inputs: [],
+        outputs: [
+            { id: 'x', label: 'X', type: HandleTypes.FLOAT },
+            { id: 'y', label: 'Y', type: HandleTypes.FLOAT },
+            { id: 'z', label: 'Z', type: HandleTypes.FLOAT },
+        ],
+        params: {
+            sensitivity: { type: 'float', default: 1.0, min: 0.01, max: 10, step: 0.01, label: 'Sensitivity' },
+            smoothing: { type: 'float', default: 0.5, min: 0, max: 0.99, step: 0.01, label: 'Smoothing' },
+        },
+        shaderKey: null,
+        isAnimated: true,
+    },
+
+    xyPad: {
+        type: 'xyPad',
+        label: 'XY Pad',
+        category: 'trigger',
+        inputs: [],
+        outputs: [
+            { id: 'x', label: 'X', type: HandleTypes.FLOAT },
+            { id: 'y', label: 'Y', type: HandleTypes.FLOAT },
+        ],
+        params: {
+            x: { type: 'float', default: 0.5, min: 0, max: 1, step: 0.001, label: 'X' },
+            y: { type: 'float', default: 0.5, min: 0, max: 1, step: 0.001, label: 'Y' },
+            minX: { type: 'float', default: 0, min: -1000, max: 1000, step: 0.01, label: 'Min X' },
+            maxX: { type: 'float', default: 1, min: -1000, max: 1000, step: 0.01, label: 'Max X' },
+            minY: { type: 'float', default: 0, min: -1000, max: 1000, step: 0.01, label: 'Min Y' },
+            maxY: { type: 'float', default: 1, min: -1000, max: 1000, step: 0.01, label: 'Max Y' },
+        },
+        shaderKey: null,
     },
 }
 

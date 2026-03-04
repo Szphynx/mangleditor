@@ -52,3 +52,13 @@ export const NODE_DEFS = {
 
 ## 4. Run the Dev Server
 The `NodePalette.vue` will automatically pick up the new node from `NODE_DEFS` on hot-reload. The `shaderPipeline.js` will automatically loop over your `params` object and inject them into the shader via the `u` prefix naming convention!
+
+---
+
+## 5. TODO: Module Acceptance Criteria
+*(To be completed)*
+We need to document the strict requirements a module must meet before it is considered fully implemented and accepted. This will cover:
+- **Editor Mode Requirements**: Standard IO handles, proper typing, parameter types (float, int, bool, color).
+- **Performance Mode Requirements**: Behavior when instantiated, what gets hidden/shown during live usage.
+- **pEdit Mode Requirements**: How parameters interact with exposed controls (XY Pads, LFOs, Knobs), assignment restrictions, and UI guidelines for the control drawer. 
+- **Labeling, Naming & Design**: Correct casing, spacing, and categorization so nodes appear cleanly in the radial node library and standard node palette without misaligned UI text.

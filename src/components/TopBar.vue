@@ -61,6 +61,13 @@
     <button class="top-bar__btn" @click="$emit('openPopup')" title="Open renderer in a separate pop-up window">
       ↗ Popout
     </button>
+    <button
+      :class="['top-bar__btn', { 'top-bar__btn--active': isPerformanceMode }]"
+      @click="$emit('togglePerformance')"
+      title="Toggle Performance Mode (P)"
+    >
+      ⚡ Performance
+    </button>
 
     <div class="top-bar__divider"></div>
 
@@ -99,14 +106,15 @@ const props = defineProps({
   previewMode: { type: String, default: 'panel' },
   projectTitle: { type: String, default: 'Untitled Project' },
   bgOpacity: { type: Number, default: 0.4 },
-  showShadows: { type: Boolean, default: true }
+  showShadows: { type: Boolean, default: true },
+  isPerformanceMode: { type: Boolean, default: false },
 })
 
 const emit = defineEmits([
   'save', 'load', 'download', 'import', 'reset', 
   'toggleRender', 'togglePreview', 'updateTitle', 
   'updateBgOpacity', 'toggleShadows',
-  'openPopup'
+  'openPopup', 'togglePerformance'
 ])
 
 const importInput = ref(null)

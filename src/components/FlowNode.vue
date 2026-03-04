@@ -214,6 +214,7 @@
 
       <!-- LFO inline params preview -->
       <div v-if="nodeType === 'lfo'" class="flow-node__inline-params" @pointerdown.stop @mousedown.stop>
+        <canvas ref="lfoCanvasRef" class="flow-node__lfo-graph" width="176" height="40"></canvas>
         <div class="flow-node__inline-param-row">
           <span class="flow-node__inline-param-label">wave</span>
           <select
@@ -248,6 +249,21 @@
             @pointerdown.stop @mousedown.stop
           />
           <span class="flow-node__inline-param-val">{{ (params.amplitude ?? 1).toFixed(2) }}</span>
+        </div>
+      </div>
+
+      <!-- XY Pad inline controller -->
+      <div v-if="nodeType === 'xyPad'" class="flow-node__xypad-wrapper" @pointerdown.stop @mousedown.stop>
+        <div
+          class="flow-node__xypad"
+          ref="xyPadNodeRef"
+          @pointerdown="onNodeXYDown"
+        >
+          <div class="flow-node__xypad-crosshair" :style="nodeXYCrosshairStyle"></div>
+        </div>
+        <div class="flow-node__xypad-readout">
+          <span class="flow-node__inline-param-val">X: {{ (params.x ?? 0.5).toFixed(2) }}</span>
+          <span class="flow-node__inline-param-val">Y: {{ (params.y ?? 0.5).toFixed(2) }}</span>
         </div>
       </div>
 
@@ -509,8 +525,98 @@ function stopWebcam() {
   emit('imageLoaded', { url: 'webcam', width: 1, height: 1, img: null, isVideo: false })
 }
 
+// XY Pad inline interaction
+const xyPadNodeRef = ref(null)
+
+const nodeXYCrosshairStyle = computed(() => ({
+  left: ((props.params.x ?? 0.5) * 100) + '%',
+  top: ((1 - (props.params.y ?? 0.5)) * 100) + '%',
+}))
+
+let isNodeXYDragging = false
+
+function onNodeXYDown(e) {
+  isNodeXYDragging = true
+  updateNodeXY(e)
+  window.addEventListener('pointermove', onNodeXYMove)
+  window.addEventListener('pointerup', onNodeXYUp)
+}
+
+function onNodeXYMove(e) {
+  if (!isNodeXYDragging) return
+  updateNodeXY(e)
+}
+
+function onNodeXYUp() {
+  isNodeXYDragging = false
+  window.removeEventListener('pointermove', onNodeXYMove)
+  window.removeEventListener('pointerup', onNodeXYUp)
+}
+
+function updateNodeXY(e) {
+  const pad = xyPadNodeRef.value
+  if (!pad) return
+  const rect = pad.getBoundingClientRect()
+  const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
+  const y = Math.max(0, Math.min(1, 1 - (e.clientY - rect.top) / rect.height))
+  emit('paramChange', 'x', x)
+  emit('paramChange', 'y', y)
+}
+
+// LFO waveform graph
+const lfoCanvasRef = ref(null)
+const lfoHistory = []
+const LFO_MAX_HISTORY = 60
+let lfoGraphInterval = null
+
+if (props.nodeType === 'lfo') {
+  onMounted(() => {
+    lfoGraphInterval = setInterval(() => {
+      const val = props.outputValues?.out ?? 0
+      lfoHistory.push(val)
+      if (lfoHistory.length > LFO_MAX_HISTORY) lfoHistory.shift()
+      drawLfoGraph()
+    }, 50)
+  })
+}
+
+function drawLfoGraph() {
+  const canvas = lfoCanvasRef.value
+  if (!canvas || lfoHistory.length < 2) return
+  const ctx = canvas.getContext('2d')
+  const w = canvas.width
+  const h = canvas.height
+  ctx.clearRect(0, 0, w, h)
+
+  let min = Infinity, max = -Infinity
+  for (const v of lfoHistory) {
+    if (v < min) min = v
+    if (v > max) max = v
+  }
+  if (max === min) { min -= 0.5; max += 0.5 }
+  const range = max - min
+
+  ctx.strokeStyle = '#00d4ff'
+  ctx.lineWidth = 1.5
+  ctx.lineJoin = 'round'
+  ctx.beginPath()
+  for (let i = 0; i < lfoHistory.length; i++) {
+    const x = (i / (LFO_MAX_HISTORY - 1)) * w
+    const y = h - ((lfoHistory[i] - min) / range) * h
+    if (i === 0) ctx.moveTo(x, y)
+    else ctx.lineTo(x, y)
+  }
+  ctx.stroke()
+  ctx.lineTo((lfoHistory.length - 1) / (LFO_MAX_HISTORY - 1) * w, h)
+  ctx.lineTo(0, h)
+  ctx.closePath()
+  ctx.fillStyle = 'rgba(0, 212, 255, 0.08)'
+  ctx.fill()
+}
+
 onBeforeUnmount(() => {
   stopWebcam()
+  clearInterval(lfoGraphInterval)
 })
 
 function openFileDialog() {
@@ -639,4 +745,55 @@ watch(evaluatedWebcamEnable, (enabled) => {
 .flow-node__fft-bar--low-mid { background: #ffa502; }
 .flow-node__fft-bar--mid { background: #2ed573; }
 .flow-node__fft-bar--high { background: #1e90ff; }
+
+/* LFO waveform graph */
+.flow-node__lfo-graph {
+  width: 100%;
+  height: 40px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  margin-bottom: 4px;
+}
+
+/* XY Pad inline */
+.flow-node__xypad-wrapper {
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.flow-node__xypad {
+  position: relative;
+  width: 160px;
+  height: 120px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 6px;
+  border: 1px solid var(--border-color, #2a2a3a);
+  cursor: crosshair;
+  touch-action: none;
+  overflow: hidden;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 25% 25%;
+}
+
+.flow-node__xypad-crosshair {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent-primary, #00d4ff);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  box-shadow: 0 0 8px rgba(0, 212, 255, 0.6);
+}
+
+.flow-node__xypad-readout {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
 </style>

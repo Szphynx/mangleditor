@@ -1,10 +1,12 @@
 <template>
   <div id="app">
     <TopBar
+      v-show="!store.isPerformanceMode"
       :is-rendering="store.isRendering"
       :preview-mode="store.previewMode"
       :project-title="store.projectTitle"
       :show-shadows="store.showShadows"
+      :is-performance-mode="store.isPerformanceMode"
       @save="onSave"
       @load="onLoad"
       @download="store.downloadGraph()"
@@ -16,9 +18,18 @@
       @open-popup="onOpenPopup"
       @update-title="(val) => store.projectTitle = val"
       @update-bg-opacity="(val) => store.bgOpacity = val"
+      @toggle-performance="store.togglePerformanceMode()"
     />
 
-    <div class="main-layout">
+    <!-- Performance Mode -->
+    <PerformanceView
+      v-if="store.isPerformanceMode"
+      ref="perfViewRef"
+      :fps="fps"
+    />
+
+    <!-- Editor Mode -->
+    <div v-show="!store.isPerformanceMode" class="main-layout">
       <NodePalette @add-node="onAddNode" />
 
       <div :class="['editor-area', { 'editor-area--bg-mode': store.previewMode === 'background' }]">
@@ -57,6 +68,7 @@ import NodePalette from './components/NodePalette.vue'
 import EditorCanvas from './components/EditorCanvas.vue'
 import PreviewPanel from './components/PreviewPanel.vue'
 import ParameterPanel from './components/ParameterPanel.vue'
+import PerformanceView from './components/PerformanceView.vue'
 import { useGraphStore } from './stores/graphStore.js'
 import { ShaderPipeline } from './engine/shaderPipeline.js'
 import { AnimationLoop } from './engine/animationLoop.js'
@@ -66,6 +78,7 @@ const store = useGraphStore()
 const editorRef = ref(null)
 const previewRef = ref(null)
 const bgCanvasRef = ref(null)
+const perfViewRef = ref(null)
 
 // Initialize audio on first user interact to bypass autoplay
 function handleFirstInteract() {
@@ -163,6 +176,14 @@ onMounted(async () => {
   window.addEventListener('click', handleFirstInteract)
   window.addEventListener('keydown', handleFirstInteract)
 
+  // P hotkey for Performance Mode
+  window.addEventListener('keydown', handleGlobalKeydown)
+
+  // Auto-detect mobile
+  if (/Mobi|Android/i.test(navigator.userAgent) || window.innerWidth < 768) {
+    store.isPerformanceMode = true
+  }
+
   // Always initialize pipeline with the panel canvas
   const panelCanvas = previewRef.value?.getCanvas?.()
   if (panelCanvas) {
@@ -212,7 +233,17 @@ onBeforeUnmount(() => {
   if (unsubAnimLoop) unsubAnimLoop()
   if (animLoop) animLoop.stop()
   if (pipeline) pipeline.dispose()
+  window.removeEventListener('keydown', handleGlobalKeydown)
 })
+
+function handleGlobalKeydown(e) {
+  // Don't trigger when typing in input/textarea
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return
+  if (e.key === 'p' || e.key === 'P') {
+    e.preventDefault()
+    store.togglePerformanceMode()
+  }
+}
 
 let frameCount = 0
 
@@ -238,6 +269,38 @@ function runPipeline(time, dt) {
 
   // 3. Store data outputs in store for UI access (number monitor, value tooltips)
   store.dataOutputs = dataOutputs
+
+  // 3.5 Sync performance mode animation/device cells → bound parameters
+  const ANIM_CONTROL_TYPES = ['lfo', 'timer', 'damper', 'fft', 'xypad', 'accelerometer']
+  for (const cell of store.perfGridCells) {
+    if (!cell.boundNodeId || !ANIM_CONTROL_TYPES.includes(cell.controlType)) continue
+    const nodeOut = dataOutputs[cell.boundNodeId]
+    if (!nodeOut) continue
+
+    if (cell.controlType === 'xypad') {
+      // XY Pad: route x→boundParamKey, y→boundParamKeyY
+      if (cell.boundParamKey && cell.boundTargetNodeId) {
+        store.setParam(cell.boundTargetNodeId, cell.boundParamKey, nodeOut.x ?? 0.5)
+      }
+      if (cell.boundParamKeyY && cell.boundTargetNodeIdY) {
+        store.setParam(cell.boundTargetNodeIdY, cell.boundParamKeyY, nodeOut.y ?? 0.5)
+      }
+    } else if (cell.controlType === 'fft') {
+      // FFT: route bass to bound param
+      if (cell.boundParamKey && cell.boundTargetNodeId) {
+        store.setParam(cell.boundTargetNodeId, cell.boundParamKey, nodeOut.bass ?? 0)
+      }
+    } else if (cell.controlType === 'accelerometer') {
+      if (cell.boundParamKey && cell.boundTargetNodeId) {
+        store.setParam(cell.boundTargetNodeId, cell.boundParamKey, nodeOut.x ?? 0)
+      }
+    } else {
+      // LFO, Timer, Damper: route 'out' to bound param
+      if (cell.boundParamKey && cell.boundTargetNodeId) {
+        store.setParam(cell.boundTargetNodeId, cell.boundParamKey, nodeOut.out ?? 0)
+      }
+    }
+  }
 
   // 4. Get shader execution order
   const shaderOrder = getShaderExecutionOrder(sortedIds, nodes)
@@ -272,6 +335,21 @@ function runPipeline(time, dt) {
       }
       popupCtx.clearRect(0, 0, outCanvas.width, outCanvas.height)
       popupCtx.drawImage(panelCanvas, 0, 0)
+    }
+  }
+
+  // 8. Copy to Performance Mode canvas if active
+  if (store.isPerformanceMode && perfViewRef.value?.perfCanvasRef) {
+    const panelCanvas = previewRef.value?.getCanvas?.()
+    const perfCanvas = perfViewRef.value.perfCanvasRef
+    if (panelCanvas && panelCanvas.width > 0 && panelCanvas.height > 0) {
+      if (perfCanvas.width !== panelCanvas.width || perfCanvas.height !== panelCanvas.height) {
+        perfCanvas.width = panelCanvas.width
+        perfCanvas.height = panelCanvas.height
+      }
+      const perfCtx = perfCanvas.getContext('2d')
+      perfCtx.clearRect(0, 0, perfCanvas.width, perfCanvas.height)
+      perfCtx.drawImage(panelCanvas, 0, 0)
     }
   }
 
