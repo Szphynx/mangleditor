@@ -157,6 +157,34 @@ function handleKeyDown(e) {
   // Ignore if typing in an input field
   if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return
 
+  const ctrl = e.ctrlKey || e.metaKey  // Support Mac Cmd key too
+
+  // Undo (Ctrl+Z)
+  if (ctrl && (e.key === 'z' || e.key === 'Z') && !e.shiftKey) {
+    e.preventDefault()
+    store.undo()
+    return
+  }
+  // Redo (Ctrl+Y or Ctrl+Shift+Z)
+  if (ctrl && (e.key === 'y' || e.key === 'Y' || ((e.key === 'z' || e.key === 'Z') && e.shiftKey))) {
+    e.preventDefault()
+    store.redo()
+    return
+  }
+  // Copy (Ctrl+C)
+  if (ctrl && (e.key === 'c' || e.key === 'C')) {
+    e.preventDefault()
+    store.copySelected()
+    return
+  }
+  // Paste (Ctrl+V)
+  if (ctrl && (e.key === 'v' || e.key === 'V')) {
+    e.preventDefault()
+    store.pasteClipboard()
+    return
+  }
+
+  // Fit to selection or all (F key)
   if (e.key === 'f' || e.key === 'F') {
     if (store.selectedNodeId) {
       fitView({ nodes: [store.selectedNodeId], padding: 0.2, duration: 600 })

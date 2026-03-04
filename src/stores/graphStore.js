@@ -49,6 +49,14 @@ export const useGraphStore = defineStore('graph', () => {
     // Exposed parameters: { nodeId: { paramKey: true } }
     const exposedParams = reactive({})
 
+    // ---- Undo / Redo Stack ----
+    const MAX_HISTORY = 50
+    const undoStack = ref([])  // Array of snapshot objects
+    const redoStack = ref([])  // Array of snapshot objects
+
+    // ---- Clipboard ----
+    const clipboard = ref(null)  // { type, params, exposedParams } of copied node(s)
+
     // ---- Computed ----
     const selectedNode = computed(() => {
         if (!selectedNodeId.value) return null
@@ -65,6 +73,9 @@ export const useGraphStore = defineStore('graph', () => {
         return nodeParams[selectedNodeId.value] || {}
     })
 
+    const canUndo = computed(() => undoStack.value.length > 0)
+    const canRedo = computed(() => redoStack.value.length > 0)
+
     // ---- Actions ----
 
     /**
@@ -76,14 +87,117 @@ export const useGraphStore = defineStore('graph', () => {
     }
 
     /**
-     * Add a node to the graph.
+     * Take a snapshot of the current graph state and push it onto the undo stack.
+     * Called before every destructive operation (addNode, removeNode, addEdge, removeEdge).
      */
-    function addNode(type, position = { x: 200, y: 200 }) {
+    function recordSnapshot() {
+        const snapshot = {
+            nodes: JSON.parse(JSON.stringify(nodes.value)),
+            edges: JSON.parse(JSON.stringify(edges.value)),
+            nodeParams: JSON.parse(JSON.stringify(nodeParams)),
+            exposedParams: JSON.parse(JSON.stringify(exposedParams)),
+        }
+        undoStack.value = [...undoStack.value.slice(-MAX_HISTORY + 1), snapshot]
+        redoStack.value = []  // Any new action clears the redo stack
+    }
+
+    /**
+     * Apply a snapshot — restores nodes, edges, params, and exposedParams.
+     */
+    function applySnapshot(snapshot) {
+        nodes.value = snapshot.nodes
+        edges.value = snapshot.edges
+        // Reset nodeParams reactive map
+        Object.keys(nodeParams).forEach(k => delete nodeParams[k])
+        Object.assign(nodeParams, snapshot.nodeParams)
+        // Reset exposedParams
+        Object.keys(exposedParams).forEach(k => delete exposedParams[k])
+        Object.assign(exposedParams, snapshot.exposedParams)
+    }
+
+    function undo() {
+        if (undoStack.value.length === 0) return
+        // Push current state to redo stack
+        const current = {
+            nodes: JSON.parse(JSON.stringify(nodes.value)),
+            edges: JSON.parse(JSON.stringify(edges.value)),
+            nodeParams: JSON.parse(JSON.stringify(nodeParams)),
+            exposedParams: JSON.parse(JSON.stringify(exposedParams)),
+        }
+        redoStack.value = [...redoStack.value, current]
+        // Pop last snapshot and apply it
+        const prev = undoStack.value[undoStack.value.length - 1]
+        undoStack.value = undoStack.value.slice(0, -1)
+        applySnapshot(prev)
+        selectedNodeId.value = null
+    }
+
+    function redo() {
+        if (redoStack.value.length === 0) return
+        // Push current state to undo stack
+        const current = {
+            nodes: JSON.parse(JSON.stringify(nodes.value)),
+            edges: JSON.parse(JSON.stringify(edges.value)),
+            nodeParams: JSON.parse(JSON.stringify(nodeParams)),
+            exposedParams: JSON.parse(JSON.stringify(exposedParams)),
+        }
+        undoStack.value = [...undoStack.value, current]
+        // Pop top redo snapshot and apply it
+        const next = redoStack.value[redoStack.value.length - 1]
+        redoStack.value = redoStack.value.slice(0, -1)
+        applySnapshot(next)
+        selectedNodeId.value = null
+    }
+
+    /**
+     * Copy the selected node to the clipboard.
+     */
+    function copySelected() {
+        if (!selectedNodeId.value) return
+        const node = nodes.value.find(n => n.id === selectedNodeId.value)
+        if (!node) return
+        clipboard.value = {
+            type: node.type,
+            position: { ...node.position },
+            params: JSON.parse(JSON.stringify(nodeParams[node.id] || {})),
+            exposedParams: JSON.parse(JSON.stringify(exposedParams[node.id] || {})),
+        }
+    }
+
+    /**
+     * Paste the clipboard node with a slight position offset.
+     */
+    function pasteClipboard() {
+        if (!clipboard.value) return
+        const { type, position, params: copiedParams, exposedParams: copiedExposed } = clipboard.value
+        // Offset so the pasted node doesn't sit exactly on top of the original
+        const newPos = { x: position.x + 40, y: position.y + 40 }
+        recordSnapshot()
+        const newId = addNode(type, newPos, true)  // skipSnapshot — we already recorded above
+        if (!newId) return
+        // Override params with the copied values
+        Object.assign(nodeParams[newId], copiedParams)
+        // Restore exposed params
+        if (Object.keys(copiedExposed).length) {
+            exposedParams[newId] = { ...copiedExposed }
+        }
+        // Update clipboard position so repeated paste shifts further
+        clipboard.value = { ...clipboard.value, position: newPos }
+        selectNode(newId)
+    }
+
+    /**
+     * Add a node to the graph.
+     * @param {boolean} [skipSnapshot] - Internal flag to skip snapshot (used by pasteClipboard)
+     */
+    function addNode(type, position = { x: 200, y: 200 }, skipSnapshot = false) {
         const def = getNodeDef(type)
         if (!def) {
             console.warn(`Unknown node type: ${type}`)
             return null
         }
+
+        if (!skipSnapshot) recordSnapshot()
 
         const id = generateNodeId()
 
@@ -113,6 +227,7 @@ export const useGraphStore = defineStore('graph', () => {
      * Remove a node and its connections. Calls GPU cleanup.
      */
     function removeNode(nodeId) {
+        recordSnapshot()
         // Call GPU cleanup BEFORE removing from state
         if (onNodeRemovedCallback) {
             onNodeRemovedCallback(nodeId)
@@ -192,6 +307,8 @@ export const useGraphStore = defineStore('graph', () => {
         }
 
         edges.value = [...edges.value, edge]
+        // Record snapshot AFTER the edge is successfully added
+        recordSnapshot()
         return true
     }
 
@@ -199,6 +316,7 @@ export const useGraphStore = defineStore('graph', () => {
      * Remove an edge.
      */
     function removeEdge(edgeId) {
+        recordSnapshot()
         edges.value = edges.value.filter(e => e.id !== edgeId)
     }
 
@@ -748,6 +866,15 @@ export const useGraphStore = defineStore('graph', () => {
         isParamExposed,
         getExposedHandles,
         getNodeOutputs,
+
+        // Undo / Redo / Clipboard
+        undo,
+        redo,
+        canUndo,
+        canRedo,
+        copySelected,
+        pasteClipboard,
+        clipboard,
 
         // Performance Mode
         isPerformanceMode,
