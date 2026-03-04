@@ -11,54 +11,96 @@ Add your new shader code into the `src/shaders/` folder (e.g., `myNewShader.frag
 4. Avoid using Javascript reserved keywords directly.
 5. If you want a secondary image overlay, use `uniform sampler2D uTexture;` and `uniform bool uTextureConnected;` to gracefully handle cases where the secondary input is empty.
 
+### UV Node Shaders (special case)
+UV nodes output a **UV map** (coordinate data stored in RG channels) instead of pixel colors. Rules:
+- Do NOT sample `uIn` — output `vec4(uv.x, uv.y, 0.0, 1.0)` instead.
+- Read an upstream UV map via `uniform sampler2D uUvIn;` and `uniform int uHasUvIn;`.
+- Fall back to `vUv` when `uHasUvIn == 0` (no upstream UV connected).
+- Mark the node in the registry with `isUvNode: true` (skips the image-input guard in the pipeline).
+
 ## 2. Register the Shader in the Pipeline
 Open `src/engine/shaderPipeline.js`:
 1. **Import** the shader at the top of the file: 
    `import myNewShaderFrag from '../shaders/myNewShader.frag?raw'`
-2. **Add** it to `SHADER_MAP` near line 40:
+2. **Add** it to `SHADER_MAP`:
    ```javascript
    const SHADER_MAP = {
        // ... existing nodes ...
        myNewShader: myNewShaderFrag
    }
    ```
+3. **If it's a UV node**, add its key to `NO_BLEND_KEYS` so the auto-blend injector is skipped:
+   ```javascript
+   const NO_BLEND_KEYS = new Set(['passthrough', 'feedback', 'uvTransform', ... 'myNewUvShader'])
+   ```
 
 ## 3. Expose the Node in the UI Registry
-Open `src/engine/nodeRegistry.js`:
-Locate the `NODE_DEFS` object around line 150. Add your new node block inside it under the correct category (e.g., `category: 'image'`), taking care to place it neatly between existing keys (for instance, after `crt:`).
+Open `src/engine/nodeRegistry.js`.
+
+### Standard Image Node
 ```javascript
-export const NODE_DEFS = {
-    // ... other nodes ...
-    myNewShader: {
-        type: 'myNewShader',
-        label: 'My Cool Shader',
-        category: 'image', // Must match one of the NODE_CATEGORIES keys
-        inputs: [
-            { id: 'in', label: 'Image', type: HandleTypes.IMAGE },
-            // Add secondary image inputs if necessary
-        ],
-        outputs: [
-            { id: 'out', label: 'Image', type: HandleTypes.IMAGE }
-        ],
-        params: {
-            parameterName: { type: 'float', default: 12.0, min: 4.0, max: 48.0, step: 1.0, label: 'Param Label' },
-            overlayColor: { type: 'color', default: '#ff0000', label: 'Hex UI Color Picker' },
-            enableMode: { type: 'bool', default: false, label: 'Enable Mode' },
-        },
-        shaderKey: 'myNewShader', // Crux: This matches the SHADER_MAP key
+myNewShader: {
+    type: 'myNewShader',
+    label: 'My Cool Shader',
+    category: 'image',
+    inputs: [
+        { id: 'in', label: 'Image', type: HandleTypes.IMAGE },
+    ],
+    outputs: [
+        { id: 'out', label: 'Image', type: HandleTypes.IMAGE }
+    ],
+    params: {
+        parameterName: { type: 'float', default: 12.0, min: 4.0, max: 48.0, step: 1.0, label: 'Param Label' },
+        overlayColor: { type: 'color', default: '#ff0000', label: 'Hex UI Color Picker' },
+        enableMode: { type: 'bool', default: false, label: 'Enable Mode' },
     },
-}
+    shaderKey: 'myNewShader',
+},
 ```
 
-## 4. Run the Dev Server
-The `NodePalette.vue` will automatically pick up the new node from `NODE_DEFS` on hot-reload. The `shaderPipeline.js` will automatically loop over your `params` object and inject them into the shader via the `u` prefix naming convention!
+### UV Map Node
+UV nodes produce coordinate maps (lime-green cables). Use `HandleTypes.UV_MAP` and set `isUvNode: true`.
+```javascript
+myUvEffect: {
+    type: 'myUvEffect',
+    label: 'My UV Effect',
+    category: 'uv',
+    inputs: [
+        { id: 'uvIn', label: 'UV Map', type: HandleTypes.UV_MAP, optional: true },
+    ],
+    outputs: [
+        { id: 'out', label: 'UV Map', type: HandleTypes.UV_MAP }
+    ],
+    params: {
+        strength: { type: 'float', default: 1.0, min: 0, max: 2, step: 0.01, label: 'Strength' },
+    },
+    shaderKey: 'myUvEffect',
+    isUvNode: true,  // Tells the pipeline to skip the image-input guard
+},
+```
 
----
+## 4. Handle Types Reference
 
-## 5. TODO: Module Acceptance Criteria
-*(To be completed)*
-We need to document the strict requirements a module must meet before it is considered fully implemented and accepted. This will cover:
-- **Editor Mode Requirements**: Standard IO handles, proper typing, parameter types (float, int, bool, color).
-- **Performance Mode Requirements**: Behavior when instantiated, what gets hidden/shown during live usage.
-- **pEdit Mode Requirements**: How parameters interact with exposed controls (XY Pads, LFOs, Knobs), assignment restrictions, and UI guidelines for the control drawer. 
-- **Labeling, Naming & Design**: Correct casing, spacing, and categorization so nodes appear cleanly in the radial node library and standard node palette without misaligned UI text.
+| Type | Constant | Cable Color | Compatible With |
+|---|---|---|---|
+| Image | `HandleTypes.IMAGE` | Cyan `#00d4ff` | Image only |
+| Float | `HandleTypes.FLOAT` | Orange `#ff9a2e` | Float, (Int→Float cast) |
+| Int | `HandleTypes.INT` | Yellow `#ffe14d` | Int, Float |
+| UV Map | `HandleTypes.UV_MAP` | Lime `#7fff6e` | UV Map, Image (Sampler input) |
+| Trigger | `HandleTypes.TRIGGER` | White `#ffffff` | Trigger only |
+| Vec2 | `HandleTypes.VEC2` | Pink `#ff6eb4` | Vec2 only |
+
+## 5. UV Chain Workflow
+
+UV nodes chain together coordinate math before the image is ever touched:
+
+```
+[UV Generator] → [UV Transform] → [UV Polar] → [Texture Sampler] ← [Image Input]
+                                                       ↓
+                                                  Warped Image
+```
+
+The **Texture Sampler** node is the final step: it reads a UV map and samples an image using those coordinates, outputting the warped image.
+
+## 6. Run the Dev Server
+The `NodePalette.vue` automatically picks up new nodes from `NODE_DEFS` on hot-reload. The `shaderPipeline.js` automatically loops over your `params` object and injects them into the shader via the `u` prefix naming convention.
