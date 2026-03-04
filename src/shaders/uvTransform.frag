@@ -1,15 +1,18 @@
-// UV Transform — scale, rotate, translate UVs
+// UV Transform — warps an incoming UV map with scale, rotate, translate.
+// Reads UV coordinates from uUvIn (or vUv if not connected) and outputs a new UV map.
 precision highp float;
 varying vec2 vUv;
-uniform sampler2D uIn;
+uniform sampler2D uUvIn;
 uniform float uScaleX;
 uniform float uScaleY;
 uniform float uRotation;    // degrees
 uniform float uTranslateX;
 uniform float uTranslateY;
+uniform int uHasUvIn;       // 1 if a UV map is connected, 0 = use screen UV
 
 void main() {
-  vec2 uv = vUv;
+  // Read base UV: from upstream UV map or screen coordinates
+  vec2 uv = uHasUvIn == 1 ? texture2D(uUvIn, vUv).rg : vUv;
 
   // Translate
   uv -= vec2(uTranslateX, uTranslateY);
@@ -29,5 +32,6 @@ void main() {
   // Uncenter
   uv += 0.5;
 
-  gl_FragColor = texture2D(uIn, uv);
+  // Output new UV map as RG
+  gl_FragColor = vec4(uv.x, uv.y, 0.0, 1.0);
 }

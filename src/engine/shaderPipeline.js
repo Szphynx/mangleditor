@@ -39,6 +39,7 @@ import asciiFrag from '../shaders/ascii.frag?raw'
 import asciiV2Frag from '../shaders/asciiV2.frag?raw'
 import fisheyeFrag from '../shaders/fisheye.frag?raw'
 import noiseContoursFrag from '../shaders/noiseContours.frag?raw'
+import textureSamplerFrag from '../shaders/textureSampler.frag?raw'
 
 const SHADER_MAP = {
     passthrough: passthroughFrag,
@@ -64,6 +65,7 @@ const SHADER_MAP = {
     asciiV2: asciiV2Frag,
     fisheye: fisheyeFrag,
     noiseContours: noiseContoursFrag,
+    textureSampler: textureSamplerFrag,
 }
 
 const MAX_FBOS = 20
@@ -445,9 +447,20 @@ export class ShaderPipeline {
             }
 
             // Skip rendering if this node has no image inputs connected
-            // (it would render black and corrupt the preview)
-            if (!hasImageInput && def.inputs.some(inp => inp.type === 'image')) {
+            // Exception: UV map nodes (isUvNode) don't need an image input — they
+            // operate on coordinates and fall back to screen UVs when nothing is connected.
+            const isUvNode = !!(def.isUvNode)
+            if (!hasImageInput && !isUvNode && def.inputs.some(inp => inp.type === 'image')) {
                 continue
+            }
+
+            // For UV nodes: inject the uHasUvIn flag so the GLSL shader knows
+            // whether it should read from the upstream UV map or fall back to vUv.
+            if (isUvNode) {
+                const uvInEdge = nodeInputEdges.find(ie => ie.targetHandle === 'uvIn')
+                const uvInTex = uvInEdge && this.fbos[uvInEdge.sourceNodeId]?.texture
+                uniforms.uUvIn = uvInTex || null
+                uniforms.uHasUvIn = uvInTex ? 1 : 0
             }
 
             // Add node-specific params as uniforms

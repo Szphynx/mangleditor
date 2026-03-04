@@ -848,10 +848,11 @@ const NODE_DEFS = {
         category: 'uv',
         inputs: [],
         outputs: [
-            { id: 'out', label: 'UV', type: HandleTypes.IMAGE }
+            { id: 'out', label: 'UV Map', type: HandleTypes.UV_MAP }
         ],
         params: {},
         shaderKey: 'uvGenerator',
+        isUvNode: true,
     },
 
     uvTransform: {
@@ -859,10 +860,11 @@ const NODE_DEFS = {
         label: 'UV Transform',
         category: 'uv',
         inputs: [
-            { id: 'in', label: 'Image', type: HandleTypes.IMAGE },
+            { id: 'uvIn', label: 'UV Map', type: HandleTypes.UV_MAP, optional: true },
+            { id: 'in', label: 'Image (Legacy)', type: HandleTypes.IMAGE, optional: true },
         ],
         outputs: [
-            { id: 'out', label: 'Image', type: HandleTypes.IMAGE }
+            { id: 'out', label: 'UV Map', type: HandleTypes.UV_MAP }
         ],
         params: {
             scaleX: { type: 'float', default: 1, min: 0.01, max: 10, step: 0.01, label: 'Scale X' },
@@ -872,6 +874,7 @@ const NODE_DEFS = {
             translateY: { type: 'float', default: 0, min: -2, max: 2, step: 0.01, label: 'Translate Y' },
         },
         shaderKey: 'uvTransform',
+        isUvNode: true,
     },
 
     uvRepeat: {
@@ -879,10 +882,11 @@ const NODE_DEFS = {
         label: 'UV Repeat',
         category: 'uv',
         inputs: [
-            { id: 'in', label: 'Image', type: HandleTypes.IMAGE },
+            { id: 'uvIn', label: 'UV Map', type: HandleTypes.UV_MAP, optional: true },
+            { id: 'in', label: 'Image (Legacy)', type: HandleTypes.IMAGE, optional: true },
         ],
         outputs: [
-            { id: 'out', label: 'Image', type: HandleTypes.IMAGE }
+            { id: 'out', label: 'UV Map', type: HandleTypes.UV_MAP }
         ],
         params: {
             repeatX: { type: 'float', default: 2, min: 0.1, max: 50, step: 0.1, label: 'Repeat X' },
@@ -892,6 +896,7 @@ const NODE_DEFS = {
             offsetY: { type: 'float', default: 0, min: 0, max: 1, step: 0.01, label: 'Offset Y' },
         },
         shaderKey: 'uvRepeat',
+        isUvNode: true,
     },
 
     uvGlitch: {
@@ -899,10 +904,11 @@ const NODE_DEFS = {
         label: 'UV Glitch',
         category: 'uv',
         inputs: [
-            { id: 'in', label: 'Image', type: HandleTypes.IMAGE },
+            { id: 'uvIn', label: 'UV Map', type: HandleTypes.UV_MAP, optional: true },
+            { id: 'in', label: 'Image (Legacy)', type: HandleTypes.IMAGE, optional: true },
         ],
         outputs: [
-            { id: 'out', label: 'Image', type: HandleTypes.IMAGE }
+            { id: 'out', label: 'UV Map', type: HandleTypes.UV_MAP }
         ],
         params: {
             blockSize: { type: 'int', default: 8, min: 1, max: 128, step: 1, label: 'Block Size' },
@@ -911,6 +917,7 @@ const NODE_DEFS = {
             direction: { type: 'select', default: 'horizontal', options: ['horizontal', 'vertical', 'both'], label: 'Direction' },
         },
         shaderKey: 'uvGlitch',
+        isUvNode: true,
     },
 
     uvPolar: {
@@ -918,10 +925,11 @@ const NODE_DEFS = {
         label: 'UV Polar',
         category: 'uv',
         inputs: [
-            { id: 'in', label: 'Image', type: HandleTypes.IMAGE },
+            { id: 'uvIn', label: 'UV Map', type: HandleTypes.UV_MAP, optional: true },
+            { id: 'in', label: 'Image (Legacy)', type: HandleTypes.IMAGE, optional: true },
         ],
         outputs: [
-            { id: 'out', label: 'Image', type: HandleTypes.IMAGE }
+            { id: 'out', label: 'UV Map', type: HandleTypes.UV_MAP }
         ],
         params: {
             mode: { type: 'select', default: 'toPolar', options: ['toPolar', 'fromPolar'], label: 'Mode' },
@@ -929,6 +937,25 @@ const NODE_DEFS = {
             centerY: { type: 'float', default: 0.5, min: 0, max: 1, step: 0.01, label: 'Center Y' },
         },
         shaderKey: 'uvPolar',
+        isUvNode: true,
+    },
+
+    // Texture Sampler — takes an Image + UV Map and emits a warped Image
+    textureSampler: {
+        type: 'textureSampler',
+        label: 'Texture Sampler',
+        category: 'uv',
+        inputs: [
+            { id: 'in', label: 'Image', type: HandleTypes.IMAGE },
+            { id: 'uvIn', label: 'UV Map', type: HandleTypes.UV_MAP },
+        ],
+        outputs: [
+            { id: 'out', label: 'Image', type: HandleTypes.IMAGE }
+        ],
+        params: {
+            wrapMode: { type: 'select', default: 'clamp', options: ['clamp', 'repeat', 'mirror'], label: 'Wrap Mode' },
+        },
+        shaderKey: 'textureSampler',
     },
 
     // ======================== UTILITY / VISUALIZATION NODES ========================
