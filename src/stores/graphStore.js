@@ -143,7 +143,7 @@ export const useGraphStore = defineStore('graph', () => {
         const targetDef = getNodeDef(targetNode.type)
         if (!sourceDef || !targetDef) return false
 
-        const sourceHandle = sourceDef.outputs.find(h => h.id === connection.sourceHandle)
+        let sourceHandle = sourceDef.outputs.find(h => h.id === connection.sourceHandle)
 
         // Check if this target handle is a dynamically exposed param
         let targetHandle = targetDef.inputs.find(h => h.id === connection.targetHandle)
@@ -747,6 +747,7 @@ export const useGraphStore = defineStore('graph', () => {
         toggleExposeParam,
         isParamExposed,
         getExposedHandles,
+        getNodeOutputs,
 
         // Performance Mode
         isPerformanceMode,

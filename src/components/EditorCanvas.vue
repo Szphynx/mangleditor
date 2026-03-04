@@ -88,6 +88,7 @@
 
       <template #node-slider="nodeProps">
         <FlowNode
+          :node-id="nodeProps.id"
           :node-type="nodeProps.type"
           :def="nodeProps.data.def"
           :params="store.nodeParams[nodeProps.id] || {}"
