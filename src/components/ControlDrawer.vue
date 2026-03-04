@@ -395,9 +395,9 @@ function startAccel(nodeId) {
 
 .control-drawer__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 8px;
-  padding: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 6px;
+  padding: 10px;
   overflow-y: auto;
   flex: 1;
 }
@@ -408,9 +408,9 @@ function startAccel(nodeId) {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-height: 120px;
+  min-height: 90px;
   border: 2px dashed var(--text-muted, #555);
-  border-radius: 12px;
+  border-radius: 10px;
   cursor: pointer;
   opacity: 0.6;
   transition: all 0.2s;
@@ -423,8 +423,19 @@ function startAccel(nodeId) {
   border-color: var(--accent-primary, #00d4ff);
 }
 
-.control-drawer__add-icon { font-size: 20px; }
+.control-drawer__add-icon { font-size: 18px; }
 .control-drawer__add-label { font-size: 9px; color: var(--text-muted, #888); text-transform: uppercase; text-align: center; line-height: 1.4; }
+
+@media (max-width: 768px) {
+  .control-drawer__grid {
+    grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+    gap: 4px;
+    padding: 8px;
+  }
+  .control-drawer__add-cell {
+    min-height: 76px;
+  }
+}
 
 /* Assign Popup */
 .assign-overlay {

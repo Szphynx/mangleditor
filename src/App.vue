@@ -57,11 +57,27 @@
 
       <ParameterPanel />
     </div>
+
+    <!-- Landscape hint: entering EDITOR from perf mode — editor needs landscape -->
+    <Transition name="rotate-hint">
+      <div v-if="showLandscapeHint" class="rotate-hint-overlay">
+        <div class="rotate-hint__icon" style="animation-name: hint-rotate-landscape">📱</div>
+        <div class="rotate-hint__text">Rotate to landscape for Editor mode</div>
+      </div>
+    </Transition>
+
+    <!-- Portrait hint: returning to PERFORMANCE mode — performance works in portrait -->
+    <Transition name="rotate-hint">
+      <div v-if="showPortraitHint" class="rotate-hint-overlay">
+        <div class="rotate-hint__icon">📱</div>
+        <div class="rotate-hint__text">Rotate to portrait for Performance mode</div>
+      </div>
+    </Transition>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import * as THREE from 'three'
 import TopBar from './components/TopBar.vue'
 import NodePalette from './components/NodePalette.vue'
@@ -79,6 +95,41 @@ const editorRef = ref(null)
 const previewRef = ref(null)
 const bgCanvasRef = ref(null)
 const perfViewRef = ref(null)
+
+// Orientation hints for mobile users
+// Editor needs LANDSCAPE, Performance works in PORTRAIT
+const showLandscapeHint = ref(false)  // "Rotate to landscape" — shown when entering editor
+const showPortraitHint = ref(false)   // "Rotate to portrait" — shown when returning to perf mode
+let landscapeHintTimer = null
+let portraitHintTimer = null
+const isMobileDevice = /Mobi|Android/i.test(navigator.userAgent) || window.innerWidth < 768
+
+function showHintFor(refVal, timerRef, duration = 2500) {
+  refVal.value = true
+  clearTimeout(timerRef.value)
+  timerRef.value = setTimeout(() => { refVal.value = false }, duration)
+}
+
+// Watch isPerformanceMode transitions to show the right orientation tip
+watch(() => store.isPerformanceMode, (isPerf, wasPerf) => {
+  if (!isMobileDevice) return
+
+  if (wasPerf && !isPerf) {
+    // Entering EDITOR from perf → Editor needs landscape
+    showHintFor(showLandscapeHint, { value: landscapeHintTimer })
+    landscapeHintTimer = setTimeout(() => { showLandscapeHint.value = false }, 2500)
+    showLandscapeHint.value = true
+    // Auto-switch to background preview so canvas fills the viewport
+    if (store.previewMode !== 'background') {
+      store.previewMode = 'background'
+    }
+  } else if (!wasPerf && isPerf) {
+    // Returning to PERFORMANCE from editor → Perf works in portrait
+    showPortraitHint.value = true
+    clearTimeout(portraitHintTimer)
+    portraitHintTimer = setTimeout(() => { showPortraitHint.value = false }, 2500)
+  }
+})
 
 // Initialize audio on first user interact to bypass autoplay
 function handleFirstInteract() {
@@ -179,8 +230,8 @@ onMounted(async () => {
   // P hotkey for Performance Mode
   window.addEventListener('keydown', handleGlobalKeydown)
 
-  // Auto-detect mobile
-  if (/Mobi|Android/i.test(navigator.userAgent) || window.innerWidth < 768) {
+  // Auto-detect mobile — start in performance mode
+  if (isMobileDevice) {
     store.isPerformanceMode = true
   }
 
@@ -234,6 +285,9 @@ onBeforeUnmount(() => {
   if (animLoop) animLoop.stop()
   if (pipeline) pipeline.dispose()
   window.removeEventListener('keydown', handleGlobalKeydown)
+  window.removeEventListener('orientationchange', checkPortrait)
+  window.removeEventListener('resize', checkPortrait)
+  clearTimeout(rotateHintTimer)
 })
 
 function handleGlobalKeydown(e) {

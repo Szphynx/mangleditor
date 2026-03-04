@@ -1,0 +1,330 @@
+{
+  "version": 1,
+  "title": "webcam asciii example",
+  "timestamp": 1772632464983,
+  "nodes": [
+    {
+      "id": "node_4_mm9uzcic",
+      "type": "xerox",
+      "position": {
+        "x": 2841.175408363447,
+        "y": -482.5543058046683
+      }
+    },
+    {
+      "id": "node_5_mm9wjlky",
+      "type": "noiseContours",
+      "position": {
+        "x": 1672.6233618917574,
+        "y": -726.4534040187051
+      }
+    },
+    {
+      "id": "node_6_mm9wkur1",
+      "type": "webcamInput",
+      "position": {
+        "x": 37.34041115323362,
+        "y": -944.0948648187996
+      }
+    },
+    {
+      "id": "node_7_mm9wm7i1",
+      "type": "asciiV2",
+      "position": {
+        "x": 2112.9270299270424,
+        "y": -321.35880590466735
+      }
+    },
+    {
+      "id": "node_8_mm9wmbeu",
+      "type": "blend",
+      "position": {
+        "x": 2691.103097043459,
+        "y": -223.5004483882351
+      }
+    },
+    {
+      "id": "node_9_mm9wn3nk",
+      "type": "displacement",
+      "position": {
+        "x": 2125.9668668986765,
+        "y": -465.8323270101888
+      }
+    },
+    {
+      "id": "node_11_mm9xey6t",
+      "type": "levels",
+      "position": {
+        "x": 2366.825276245248,
+        "y": -143.54110638262932
+      }
+    },
+    {
+      "id": "node_12_mmaoc2tn",
+      "type": "knob",
+      "position": {
+        "x": 1660.4387831565127,
+        "y": -202.1492825297639
+      }
+    },
+    {
+      "id": "node_14_mmaof9bk",
+      "type": "feedbackLoop",
+      "position": {
+        "x": 2706.3120452921567,
+        "y": 9.05754526388045
+      }
+    },
+    {
+      "id": "node_15_mmaohwhu",
+      "type": "fft",
+      "position": {
+        "x": 1757.3865767336877,
+        "y": 273.41289784980364
+      }
+    },
+    {
+      "id": "node_17_mmaoic1p",
+      "type": "numberMonitor",
+      "position": {
+        "x": 2172.50610003375,
+        "y": 265.0244709393815
+      }
+    },
+    {
+      "id": "node_18_mmaop3vp",
+      "type": "chromaticAberration",
+      "position": {
+        "x": 3013.6777677651253,
+        "y": -9.322101833628295
+      }
+    },
+    {
+      "id": "node_23_mmaoxqio",
+      "type": "pixelSort",
+      "position": {
+        "x": 3360.8005864062206,
+        "y": 123.97556894402047
+      }
+    },
+    {
+      "id": "node_24_mmc3l9a3",
+      "type": "onStart",
+      "position": {
+        "x": -430.92950122027275,
+        "y": -917.8409834844979
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_node_6_mm9wkur1_out-node_5_mm9wjlky_texture",
+      "source": "node_6_mm9wkur1",
+      "sourceHandle": "out",
+      "target": "node_5_mm9wjlky",
+      "targetHandle": "texture"
+    },
+    {
+      "id": "e_node_6_mm9wkur1_out-node_5_mm9wjlky_in",
+      "source": "node_6_mm9wkur1",
+      "sourceHandle": "out",
+      "target": "node_5_mm9wjlky",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e_node_6_mm9wkur1_out-node_7_mm9wm7i1_in",
+      "source": "node_6_mm9wkur1",
+      "sourceHandle": "out",
+      "target": "node_7_mm9wm7i1",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e_node_7_mm9wm7i1_out-node_8_mm9wmbeu_overlay",
+      "source": "node_7_mm9wm7i1",
+      "sourceHandle": "out",
+      "target": "node_8_mm9wmbeu",
+      "targetHandle": "overlay"
+    },
+    {
+      "id": "e_node_5_mm9wjlky_out-node_9_mm9wn3nk_heightmap",
+      "source": "node_5_mm9wjlky",
+      "sourceHandle": "out",
+      "target": "node_9_mm9wn3nk",
+      "targetHandle": "heightmap"
+    },
+    {
+      "id": "e_node_5_mm9wjlky_out-node_9_mm9wn3nk_in",
+      "source": "node_5_mm9wjlky",
+      "sourceHandle": "out",
+      "target": "node_9_mm9wn3nk",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e_node_8_mm9wmbeu_out-node_11_mm9xey6t_in",
+      "source": "node_8_mm9wmbeu",
+      "sourceHandle": "out",
+      "target": "node_11_mm9xey6t",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e_node_9_mm9wn3nk_out-node_8_mm9wmbeu_base",
+      "source": "node_9_mm9wn3nk",
+      "sourceHandle": "out",
+      "target": "node_8_mm9wmbeu",
+      "targetHandle": "base"
+    },
+    {
+      "id": "e_node_11_mm9xey6t_out-node_14_mmaof9bk_in",
+      "source": "node_11_mm9xey6t",
+      "sourceHandle": "out",
+      "target": "node_14_mmaof9bk",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e_node_15_mmaohwhu_bass-node_17_mmaoic1p_in",
+      "source": "node_15_mmaohwhu",
+      "sourceHandle": "bass",
+      "target": "node_17_mmaoic1p",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e_node_14_mmaof9bk_out-node_18_mmaop3vp_in",
+      "source": "node_14_mmaof9bk",
+      "sourceHandle": "out",
+      "target": "node_18_mmaop3vp",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e_node_12_mmaoc2tn_out-node_14_mmaof9bk_decay",
+      "source": "node_12_mmaoc2tn",
+      "sourceHandle": "out",
+      "target": "node_14_mmaof9bk",
+      "targetHandle": "decay"
+    },
+    {
+      "id": "e_node_18_mmaop3vp_out-node_23_mmaoxqio_in",
+      "source": "node_18_mmaop3vp",
+      "sourceHandle": "out",
+      "target": "node_23_mmaoxqio",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e_node_17_mmaoic1p_out-node_18_mmaop3vp_intensity",
+      "source": "node_17_mmaoic1p",
+      "sourceHandle": "out",
+      "target": "node_18_mmaop3vp",
+      "targetHandle": "intensity"
+    },
+    {
+      "id": "e_node_24_mmc3l9a3_out-node_6_mm9wkur1_trigger",
+      "source": "node_24_mmc3l9a3",
+      "sourceHandle": "out",
+      "target": "node_6_mm9wkur1",
+      "targetHandle": "trigger"
+    }
+  ],
+  "params": {
+    "node_4_mm9uzcic": {
+      "threshold": 0.04,
+      "noiseAmount": 0.65,
+      "contrast": 1.7000000000000002,
+      "blendAmount": 0.98
+    },
+    "node_5_mm9wjlky": {
+      "speed": 0.36,
+      "scale": 3.31,
+      "palNum": 5,
+      "edgeStrength": 10.4,
+      "highlight": 24.9,
+      "hueShift": -0.99,
+      "hueRadius": 0.84,
+      "imageBlend": 1,
+      "taper": 2.2,
+      "blendAmount": 1
+    },
+    "node_6_mm9wkur1": {
+      "enable": false,
+      "trigger": 0
+    },
+    "node_7_mm9wm7i1": {
+      "cellSize": 20,
+      "brightness": 0.5,
+      "colorMode": "Palette",
+      "fgColor": "#00ff66",
+      "bgColor": "#000000",
+      "extendedPalette": true,
+      "intensity": 1,
+      "blendAmount": 0.69
+    },
+    "node_8_mm9wmbeu": {
+      "mode": "subtract",
+      "opacity": 1
+    },
+    "node_9_mm9wn3nk": {
+      "strength": 0.335,
+      "channel": "luminance",
+      "blendAmount": 0.53
+    },
+    "node_11_mm9xey6t": {
+      "inputBlack": 0,
+      "inputWhite": 45,
+      "gamma": 10,
+      "outputBlack": 6,
+      "outputWhite": 255,
+      "channel": "master",
+      "blendAmount": 1
+    },
+    "node_12_mmaoc2tn": {
+      "value": 0.87,
+      "min": 0,
+      "max": 1,
+      "step": 0.01
+    },
+    "node_14_mmaof9bk": {
+      "decay": 0.87,
+      "iterations": 2,
+      "blendMode": "normal"
+    },
+    "node_15_mmaohwhu": {
+      "smoothing": 0.27,
+      "gain": 1
+    },
+    "node_17_mmaoic1p": {
+      "decimals": 3,
+      "showGraph": true
+    },
+    "node_18_mmaop3vp": {
+      "intensity": 0,
+      "direction": "radial",
+      "centerX": 0.5,
+      "centerY": 0.5,
+      "blendAmount": 1
+    },
+    "node_23_mmaoxqio": {
+      "direction": "vertical",
+      "sortBy": "saturation",
+      "threshold": 0.57,
+      "upperThreshold": 0.75,
+      "reverse": true,
+      "blendAmount": 1
+    },
+    "node_24_mmc3l9a3": {}
+  },
+  "exposedParams": {
+    "node_11_mm9xey6t": {
+      "inputBlack": true
+    },
+    "node_14_mmaof9bk": {
+      "decay": true
+    },
+    "node_7_mm9wm7i1": {
+      "brightness": true
+    },
+    "node_18_mmaop3vp": {
+      "intensity": true
+    }
+  },
+  "settings": {
+    "previewMode": "anchored"
+  }
+}

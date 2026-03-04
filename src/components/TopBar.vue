@@ -2,7 +2,7 @@
   <div class="top-bar">
     <div class="top-bar__logo-container">
       <img src="/mangleditor-icon.png" class="top-bar__logo-icon" alt="mangleditor" />
-      <span class="top-bar__logo-text">mangleditor</span>
+      <span class="top-bar__logo-text">mangleditor <span class="top-bar__version">v{{ pkg.version }}</span></span>
       <span class="top-bar__coded-by">coded with love and haste</span>
     </div>
 
@@ -19,16 +19,17 @@
 
     <div class="top-bar__divider"></div>
 
-    <button class="top-bar__btn" @click="$emit('save')" title="Save to browser">
+    <!-- Mobile-hidden: not essential on small screens -->
+    <button class="top-bar__btn top-bar__mobile-hide" @click="$emit('save')" title="Save to browser">
       💾 Save
     </button>
-    <button class="top-bar__btn" @click="$emit('load')" title="Load from browser">
+    <button class="top-bar__btn top-bar__mobile-hide" @click="$emit('load')" title="Load from browser storage">
       📂 Load
     </button>
-    <button class="top-bar__btn" @click="$emit('download')" title="Download graph as JSON">
+    <button class="top-bar__btn top-bar__mobile-hide" @click="$emit('download')" title="Download graph as JSON">
       ⬇ Download
     </button>
-    <button class="top-bar__btn" @click="openImport" title="Import graph JSON">
+    <button class="top-bar__btn top-bar__mobile-hide" @click="openImport" title="Import graph JSON">
       ⬆ Import
     </button>
     <input
@@ -41,8 +42,9 @@
 
     <div class="top-bar__divider"></div>
 
+    <!-- Always visible: critical controls -->
     <button class="top-bar__btn top-bar__btn--danger" @click="$emit('reset')" title="Clear all nodes">
-      🗑 Reset
+      🗑 <span class="top-bar__btn-label">Reset</span>
     </button>
 
     <div class="top-bar__divider"></div>
@@ -52,13 +54,13 @@
       @click="$emit('toggleRender')"
       :title="isRendering ? 'Stop rendering' : 'Resume rendering'"
     >
-      {{ isRendering ? '⏸ Stop' : '▶ Resume' }}
+      {{ isRendering ? '⏸' : '▶' }} <span class="top-bar__btn-label">{{ isRendering ? 'Stop' : 'Resume' }}</span>
     </button>
 
-    <button class="top-bar__btn" @click="$emit('togglePreview')" title="Toggle preview mode">
+    <button class="top-bar__btn top-bar__mobile-hide" @click="$emit('togglePreview')" title="Toggle preview mode">
       {{ previewMode === 'anchored' ? '🖥 Anchored' : previewMode === 'floating' ? '🪟 Floating' : '🌌 Background' }}
     </button>
-    <button class="top-bar__btn" @click="$emit('openPopup')" title="Open renderer in a separate pop-up window">
+    <button class="top-bar__btn top-bar__mobile-hide" @click="$emit('openPopup')" title="Open renderer in a separate pop-up window">
       ↗ Popout
     </button>
     <button
@@ -66,20 +68,20 @@
       @click="$emit('togglePerformance')"
       title="Toggle Performance Mode (P)"
     >
-      ⚡ Performance
+      ⚡ <span class="top-bar__btn-label">Perf</span>
     </button>
 
-    <div class="top-bar__divider"></div>
+    <div class="top-bar__divider top-bar__mobile-hide"></div>
 
     <button 
-      :class="['top-bar__btn', { 'top-bar__btn--active': showShadows }]"
+      :class="['top-bar__btn top-bar__mobile-hide', { 'top-bar__btn--active': showShadows }]"
       @click="$emit('toggleShadows')" 
       title="Toggle CSS drop shadows on nodes and cables"
     >
       ☁ Shadows
     </button>
 
-    <div v-if="previewMode === 'background'" class="top-bar__slider-group" title="Workspace Darkness">
+    <div v-if="previewMode === 'background'" class="top-bar__slider-group top-bar__mobile-hide" title="Workspace Darkness">
       <span class="top-bar__slider-label">Dim</span>
       <input 
         type="range" 
@@ -100,6 +102,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import pkg from '../../package.json'
 
 const props = defineProps({
   isRendering: { type: Boolean, default: true },
@@ -137,6 +140,16 @@ function onImport(e) {
 </script>
 
 <style scoped>
+.top-bar__version {
+  font-size: 10px;
+  color: var(--text-muted);
+  background: var(--bg-tertiary);
+  padding: 1px 4px;
+  border-radius: 4px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
 .top-bar__slider-group {
   display: flex;
   align-items: center;
@@ -159,5 +172,21 @@ function onImport(e) {
   width: 60px;
   cursor: pointer;
   accent-color: var(--accent-primary);
+}
+
+@media (max-width: 768px) {
+  .top-bar__mobile-hide {
+    display: none !important;
+  }
+  .top-bar__btn-label {
+    display: none;
+  }
+  .top-bar__logo-text {
+    display: none;
+  }
+  .top-bar__title-input {
+    width: 90px;
+    font-size: 11px;
+  }
 }
 </style>
