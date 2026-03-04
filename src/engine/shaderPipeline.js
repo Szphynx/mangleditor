@@ -520,6 +520,37 @@ export class ShaderPipeline {
             this.renderNode(nodeId, material, fbo)
             perfTimings[nodeId] = performance.now() - t0
             lastFBO = fbo
+
+            // ---- LEGACY COMPAT: UV node + direct image input ----
+            // If a UV node has a legacy image connected to its 'in' handle,
+            // automatically run a textureSampler pass so the FBO out is a
+            // warped image (not a raw UV map). Existing patches keep working.
+            if (isUvNode) {
+                const legacyEdge = nodeInputEdges.find(ie => ie.targetHandle === 'in')
+                if (legacyEdge) {
+                    const legNode = nodesMap[legacyEdge.sourceNodeId]
+                    let legTex = null
+                    if (legNode && (legNode.type === 'imageInput' || legNode.type === 'uiImageSlot' || legNode.type === 'webcamInput')) {
+                        legTex = this.textures[legacyEdge.sourceNodeId] || null
+                    } else if (legacyEdge.sourceNodeId && this.fbos[legacyEdge.sourceNodeId]) {
+                        legTex = this.fbos[legacyEdge.sourceNodeId].texture
+                    }
+                    if (legTex) {
+                        // The UV map is now in fbo.texture. Use it to sample the legacy image.
+                        const legacyFboId = nodeId + '__legacy__'
+                        const legacyFbo = this.getOrCreateFBO(legacyFboId)
+                        const samplerMat = this.getOrCreateMaterial(legacyFboId, 'textureSampler', {
+                            uIn: legTex,
+                            uUvIn: fbo.texture,
+                            uWrapMode: 0, // clamp
+                        })
+                        this.renderNode(legacyFboId, samplerMat, legacyFbo)
+                        // Override the UV node's FBO so downstream sees a warped image
+                        this.fbos[nodeId] = legacyFbo
+                        lastFBO = legacyFbo
+                    }
+                }
+            }
         }
 
         // Render the preview: either the selected node or the last node that actually rendered
