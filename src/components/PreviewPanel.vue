@@ -156,7 +156,18 @@ let histInterval = null
 function getCanvas() {
   return canvasRef.value
 }
-defineExpose({ canvasRef, width, height, getCanvas })
+defineExpose({ canvasRef, width, height, getCanvas, fitView })
+
+watch([width, height], async () => {
+  await nextTick()
+  fitView()
+})
+
+onMounted(async () => {
+  await nextTick()
+  fitView()
+  window.addEventListener('resize', fitView)
+})
 
 watch(showHistogram, (val) => {
   if (val) {
@@ -170,6 +181,7 @@ watch(showHistogram, (val) => {
 
 onBeforeUnmount(() => {
   if (histInterval) clearInterval(histInterval)
+  window.removeEventListener('resize', fitView)
 })
 
 function zoomIn() { zoom.value = Math.min(zoom.value * 1.25, 10) }

@@ -845,7 +845,7 @@ const NODE_DEFS = {
     uvGenerator: {
         type: 'uvGenerator',
         label: 'UV Generator',
-        category: 'uv',
+        category: 'hidden',
         inputs: [],
         outputs: [
             { id: 'out', label: 'UV Map', type: HandleTypes.UV_MAP }
@@ -940,23 +940,29 @@ const NODE_DEFS = {
         isUvNode: true,
     },
 
-    // Texture Sampler — takes an Image + UV Map and emits a warped Image
-    textureSampler: {
-        type: 'textureSampler',
-        label: 'Texture Sampler',
-        category: 'uv',
+    // Texture Transform Combo — generates/reads UVs, scales/rotates/translates, and samples an image.
+    textureTransform: {
+        type: 'textureTransform',
+        label: 'Texture Transform',
+        category: 'uv', // or 'image', but 'uv' groups it with other spatial nodes
         inputs: [
-            { id: 'in', label: 'Image', type: HandleTypes.IMAGE },
-            { id: 'uvIn', label: 'UV Map', type: HandleTypes.UV_MAP },
+            { id: 'in', label: 'Image', type: HandleTypes.IMAGE, optional: true },
+            { id: 'uvIn', label: 'UV Map', type: HandleTypes.UV_MAP, optional: true },
         ],
         outputs: [
-            { id: 'out', label: 'Image', type: HandleTypes.IMAGE }
+            { id: 'out', label: 'Image/UV', type: HandleTypes.IMAGE } // Actually it's polymorphic, outputs IMAGE if IMAGE in, UV_MAP if not. We'll label it Image for now as that's the primary use.
         ],
         params: {
+            scaleX: { type: 'float', default: 1, min: 0.01, max: 10, step: 0.01, label: 'Scale X' },
+            scaleY: { type: 'float', default: 1, min: 0.01, max: 10, step: 0.01, label: 'Scale Y' },
+            rotation: { type: 'float', default: 0, min: 0, max: 360, step: 1, label: 'Rotation (°)' },
+            translateX: { type: 'float', default: 0, min: -2, max: 2, step: 0.01, label: 'Translate X' },
+            translateY: { type: 'float', default: 0, min: -2, max: 2, step: 0.01, label: 'Translate Y' },
             wrapMode: { type: 'select', default: 'clamp', options: ['clamp', 'repeat', 'mirror'], label: 'Wrap Mode' },
         },
-        shaderKey: 'textureSampler',
+        shaderKey: 'textureTransform',
     },
+
 
     // ======================== UTILITY / VISUALIZATION NODES ========================
     numberMonitor: {

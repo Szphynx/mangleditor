@@ -39,8 +39,7 @@ import asciiFrag from '../shaders/ascii.frag?raw'
 import asciiV2Frag from '../shaders/asciiV2.frag?raw'
 import fisheyeFrag from '../shaders/fisheye.frag?raw'
 import noiseContoursFrag from '../shaders/noiseContours.frag?raw'
-import textureSamplerFrag from '../shaders/textureSampler.frag?raw'
-
+import textureTransformFrag from '../shaders/textureTransform.frag?raw'
 const SHADER_MAP = {
     passthrough: passthroughFrag,
     reededGlass: reededGlassFrag,
@@ -65,7 +64,7 @@ const SHADER_MAP = {
     asciiV2: asciiV2Frag,
     fisheye: fisheyeFrag,
     noiseContours: noiseContoursFrag,
-    textureSampler: textureSamplerFrag,
+    textureTransform: textureTransformFrag,
 }
 
 const MAX_FBOS = 20
@@ -198,7 +197,7 @@ export class ShaderPipeline {
         // UV-category shaders warp coordinates before sampling — they should never
         // have blend injection applied, as they have no blendAmount param and
         // the default of 0.0 would make them invisible.
-        const NO_BLEND_KEYS = new Set(['passthrough', 'feedback', 'uvTransform', 'uvPolar', 'uvRepeat', 'uvGlitch', 'uvGenerator', 'textureSampler'])
+        const NO_BLEND_KEYS = new Set(['passthrough', 'feedback', 'uvTransform', 'uvPolar', 'uvRepeat', 'uvGlitch', 'uvGenerator', 'textureSampler', 'textureTransform'])
         if (!NO_BLEND_KEYS.has(shaderKey)) {
             const hasUIn = fragSource.includes('uniform sampler2D uIn;')
             const hasUTexture = fragSource.includes('uniform sampler2D uTexture;')
@@ -539,9 +538,16 @@ export class ShaderPipeline {
                         // The UV map is now in fbo.texture. Use it to sample the legacy image.
                         const legacyFboId = nodeId + '__legacy__'
                         const legacyFbo = this.getOrCreateFBO(legacyFboId)
-                        const samplerMat = this.getOrCreateMaterial(legacyFboId, 'textureSampler', {
+                        const samplerMat = this.getOrCreateMaterial(legacyFboId, 'textureTransform', {
                             uIn: legTex,
+                            uInConnected: true,
                             uUvIn: fbo.texture,
+                            uUvInConnected: true,
+                            uScaleX: 1.0,
+                            uScaleY: 1.0,
+                            uRotation: 0.0,
+                            uTranslateX: 0.0,
+                            uTranslateY: 0.0,
                             uWrapMode: 0, // clamp
                         })
                         this.renderNode(legacyFboId, samplerMat, legacyFbo)

@@ -400,6 +400,9 @@ function runPipeline(time, dt) {
       if (perfCanvas.width !== panelCanvas.width || perfCanvas.height !== panelCanvas.height) {
         perfCanvas.width = panelCanvas.width
         perfCanvas.height = panelCanvas.height
+        if (typeof perfViewRef.value?.fitView === 'function') {
+          perfViewRef.value.fitView()
+        }
       }
       const perfCtx = perfCanvas.getContext('2d')
       perfCtx.clearRect(0, 0, perfCanvas.width, perfCanvas.height)

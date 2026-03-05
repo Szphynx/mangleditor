@@ -298,12 +298,15 @@ export const useGraphStore = defineStore('graph', () => {
             e => !(e.target === connection.target && e.targetHandle === connection.targetHandle)
         )
 
+        const isModulation = sourceHandle.type !== HandleTypes.IMAGE && sourceHandle.type !== HandleTypes.UV_MAP
+
         const edge = {
             id: `e_${connection.source}_${connection.sourceHandle}-${connection.target}_${connection.targetHandle}`,
             source: connection.source,
             sourceHandle: connection.sourceHandle,
             target: connection.target,
             targetHandle: connection.targetHandle,
+            animated: isModulation, // Native dash flow
         }
 
         edges.value = [...edges.value, edge]
@@ -575,6 +578,26 @@ export const useGraphStore = defineStore('graph', () => {
 
             // Restore edges
             for (const e of data.edges) {
+                // Retroactively add styling if missing from older saves
+                if (!e.style || !e.animated) {
+                    const sourceNode = nodes.value.find(n => n.id === e.source)
+                    if (sourceNode) {
+                        const sourceDef = getNodeDef(sourceNode.type)
+                        let sourceHandle = sourceDef?.outputs?.find(h => h.id === e.sourceHandle)
+                        // handle dynamic outputs (like slider)
+                        if (!sourceHandle && sourceDef) {
+                            const dynamicOutputs = getNodeOutputs(e.source)
+                            sourceHandle = dynamicOutputs.find(o => o.id === e.sourceHandle)
+                        }
+                        if (sourceHandle) {
+                            const isModulation = sourceHandle.type !== HandleTypes.IMAGE && sourceHandle.type !== HandleTypes.UV_MAP
+                            if (isModulation) {
+                                // Let animated handle the CSS natively
+                                e.animated = true
+                            }
+                        }
+                    }
+                }
                 edges.value.push(e)
             }
 

@@ -11,6 +11,10 @@ Mangleditor is a primitive browser-based alternative to TouchDesigner built in V
 
 ## Current State & Known Issues
 
+## Future Feature Backlog
+
+- **Universal UV Mapping**: In a future update, every single image effect node (Reeded Glass, Xerox, etc.) will receive an optional `UV_MAP` input port, allowing generative warp maps to be plugged directly into any image effect without needing a Texture Sampler.
+
 ⚠️ **Warning: This is an early alpha release.**
 Work on this project is sporadic. There are plenty of bugs at the moment!
 

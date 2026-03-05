@@ -642,8 +642,13 @@ body {
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.flow-node .vue-flow__handle:hover {
-  transform: scale(1.4);
+.flow-node .vue-flow__handle-left:hover {
+  transform: translate(-50%, -50%) scale(1.4);
+  box-shadow: 0 0 8px currentColor;
+}
+
+.flow-node .vue-flow__handle-right:hover {
+  transform: translate(50%, -50%) scale(1.4);
   box-shadow: 0 0 8px currentColor;
 }
 
@@ -1249,6 +1254,48 @@ select.param-field__input {
 /* ============================================
    HANDLE VALUE TOOLTIPS
    ============================================ */
+
+/* Base tooltip style */
+.flow-node__handle-tooltip {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  padding: 4px 8px;
+  border-radius: var(--border-radius-sm);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--border-subtle);
+}
+
+.vue-flow__handle:hover+.flow-node__handle-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Left handle tooltips position outside */
+.flow-node__handle-tooltip--left {
+  right: calc(100% + 8px);
+}
+
+/* Right handle tooltips position outside */
+.flow-node__handle-tooltip--right {
+  left: calc(100% + 8px);
+}
+
+/* Ensure handle doesn't clip the tooltip */
+.vue-flow__handle {
+  overflow: visible !important;
+}
+
 .flow-node__handle-value {
   font-size: 9px;
   font-family: 'JetBrains Mono', monospace;

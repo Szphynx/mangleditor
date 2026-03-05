@@ -19,19 +19,22 @@
 
     <div class="top-bar__divider"></div>
 
-    <!-- Mobile-hidden: not essential on small screens -->
-    <button class="top-bar__btn top-bar__mobile-hide" @click="$emit('save')" title="Save to browser">
-      💾 Save
-    </button>
-    <button class="top-bar__btn top-bar__mobile-hide" @click="$emit('load')" title="Load from browser storage">
-      📂 Load
-    </button>
-    <button class="top-bar__btn top-bar__mobile-hide" @click="$emit('download')" title="Download graph as JSON">
-      ⬇ Download
-    </button>
-    <button class="top-bar__btn top-bar__mobile-hide" @click="openImport" title="Import graph JSON">
-      ⬆ Import
-    </button>
+    <!-- File Dropdown -->
+    <div class="top-bar__dropdown-wrapper top-bar__mobile-hide">
+      <button class="top-bar__btn" @click="toggleMenu">
+        File ▾
+      </button>
+      <div v-if="showFileMenu" class="top-bar__dropdown-menu">
+        <button class="top-bar__dropdown-item" @click="$emit('save')">💾 Save</button>
+        <button class="top-bar__dropdown-item" @click="$emit('load')">📂 Load</button>
+        <button class="top-bar__dropdown-item" @click="openImport()">⬆ Import</button>
+        <button class="top-bar__dropdown-item" @click="$emit('download')">⬇ Download</button>
+        <div class="top-bar__dropdown-divider"></div>
+        <div class="top-bar__dropdown-header">Examples</div>
+        <button class="top-bar__dropdown-item" @click="loadExample('/templates/UV_Combo_Demo.json')">🌌 UV Combo Demo</button>
+      </div>
+    </div>
+    
     <input
       ref="importInput"
       type="file"
@@ -101,7 +104,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import pkg from '../../package.json'
 
 const props = defineProps({
@@ -136,10 +139,83 @@ function onImport(e) {
   reader.readAsText(file)
   // Reset so same file can be imported again
   e.target.value = ''
+  showFileMenu.value = false
 }
+
+const showFileMenu = ref(false)
+
+function toggleMenu(e) {
+  showFileMenu.value = !showFileMenu.value
+  e.stopPropagation()
+}
+
+function closeMenu() {
+  showFileMenu.value = false
+}
+
+async function loadExample(path) {
+  try {
+    const res = await fetch(path)
+    if (!res.ok) throw new Error("Could not load")
+    const jsonStr = await res.text()
+    emit('import', jsonStr)
+  } catch (err) {
+    alert("Failed to load example patch.")
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('click', closeMenu)
+})
+onUnmounted(() => {
+  window.removeEventListener('click', closeMenu)
+})
 </script>
 
 <style scoped>
+.top-bar__dropdown-wrapper {
+  position: relative;
+}
+.top-bar__dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-sm);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  min-width: 150px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  z-index: 1000;
+  margin-top: 4px;
+}
+.top-bar__dropdown-item {
+  background: transparent;
+  color: var(--text-primary);
+  border: none;
+  font-size: 11px;
+  padding: 6px 12px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.top-bar__dropdown-item:hover {
+  background: var(--bg-tertiary);
+}
+.top-bar__dropdown-divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 4px;
+}
+.top-bar__dropdown-header {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  padding: 4px 12px;
+  pointer-events: none;
+}
 .top-bar__version {
   font-size: 10px;
   color: var(--text-muted);

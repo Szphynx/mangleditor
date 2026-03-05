@@ -111,6 +111,7 @@
           :params="store.nodeParams[nodeProps.id] || {}"
           :selected="store.selectedNodeId === nodeProps.id"
           :exposed-handles="store.getExposedHandles(nodeProps.id)"
+          :output-values="store.dataOutputs[nodeProps.id] || {}"
           :monitor-value="nodeProps.type === 'numberMonitor' ? store.getDataOutput(nodeProps.id, 'out') : null"
           :perf-ms="store.perfTimings[nodeProps.id] ?? null"
           @select="store.selectNode(nodeProps.id)"

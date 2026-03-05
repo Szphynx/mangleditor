@@ -224,7 +224,7 @@ onBeforeUnmount(() => {
   clearInterval(histInterval)
 })
 
-defineExpose({ perfCanvasRef })
+defineExpose({ perfCanvasRef, fitView })
 </script>
 
 <style scoped>

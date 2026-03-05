@@ -99,6 +99,12 @@
             :position="Position.Left"
             :style="{ background: getTypeColor(input.type) }"
           />
+          <div
+            v-if="input.type !== 'image' && input.type !== 'uvmap' && inputValues[input.id] !== undefined"
+            class="flow-node__handle-tooltip flow-node__handle-tooltip--left"
+          >
+            {{ formatInlineValue(inputValues[input.id]) }}
+          </div>
           <span class="flow-node__handle-label">{{ input.label }}</span>
           <span class="flow-node__handle-type">{{ input.type }}</span>
           <!-- Value tooltip on hover for connected data inputs -->
@@ -123,6 +129,12 @@
             :position="Position.Left"
             :style="{ background: getTypeColor(handle.type) }"
           />
+          <div
+            v-if="handle.type !== 'image' && handle.type !== 'uvmap' && inputValues[handle.id] !== undefined"
+            class="flow-node__handle-tooltip flow-node__handle-tooltip--left"
+          >
+            {{ formatInlineValue(inputValues[handle.id]) }}
+          </div>
           <span class="flow-node__handle-label flow-node__handle-label--exposed">⊕ {{ handle.label }}</span>
           <span class="flow-node__handle-type">{{ handle.type }}</span>
         </div>
@@ -324,6 +336,12 @@
             :position="Position.Right"
             :style="{ background: getTypeColor(output.type) }"
           />
+          <div
+            v-if="output.type !== 'image' && output.type !== 'uvmap' && outputValues[output.id] !== undefined"
+            class="flow-node__handle-tooltip flow-node__handle-tooltip--right"
+          >
+            {{ formatInlineValue(outputValues[output.id]) }}
+          </div>
         </div>
       </div>
     </div>
@@ -587,6 +605,13 @@ if (props.nodeType === 'lfo') {
 function drawLfoGraph() {
   const canvas = lfoCanvasRef.value
   if (!canvas || lfoHistory.length < 2) return
+  
+  // ensure canvas pixel dimensions match display resolution so it doesn't scale blurtly or miss layout updates
+  if (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
+     canvas.width = canvas.clientWidth
+     canvas.height = canvas.clientHeight
+  }
+
   const ctx = canvas.getContext('2d')
   const w = canvas.width
   const h = canvas.height
@@ -670,6 +695,12 @@ watch(() => props.monitorValue, (val) => {
 function drawGraph() {
   const canvas = monitorCanvas.value
   if (!canvas) return
+  
+  if (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
+     canvas.width = canvas.clientWidth
+     canvas.height = canvas.clientHeight   
+  }
+
   const ctx = canvas.getContext('2d')
   const w = canvas.width
   const h = canvas.height
