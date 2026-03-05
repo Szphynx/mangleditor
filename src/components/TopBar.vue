@@ -20,7 +20,7 @@
     <div class="top-bar__divider"></div>
 
     <!-- File Dropdown -->
-    <div class="top-bar__dropdown-wrapper top-bar__mobile-hide">
+    <div class="top-bar__dropdown-wrapper">
       <button class="top-bar__btn" @click="toggleMenu">
         File ▾
       </button>
