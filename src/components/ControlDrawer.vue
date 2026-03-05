@@ -19,7 +19,7 @@
     <!-- Grid area -->
     <div v-show="!collapsed" class="control-drawer__grid">
       <ControlCell
-        v-for="(cell, idx) in store.perfGridCells"
+        v-for="(cell, idx) in activeCells"
         :key="cell.id"
         :cell="cell"
         :edit-mode="store.isPerfEditMode"
@@ -86,7 +86,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useGraphStore } from '../stores/graphStore.js'
 import { getNodeDef } from '../engine/nodeRegistry.js'
 import ControlCell from './ControlCell.vue'
@@ -135,10 +135,38 @@ const assignPopupTitle = computed(() =>
   assignPopupTitleOverride.value || (assignIsAnimNode.value ? 'Route Output To…' : 'Assign Parameter')
 )
 
+const activeCells = computed(() => {
+  return store.perfGridCells.filter(cell => {
+    // Only filter standard UI controls that interactively set a parameter.
+    // LFOs, FFTs, etc send data outward and don't get "occupied".
+    const isBasicControl = ['knob', 'slider', 'button', 'toggle', 'bang'].includes(cell.controlType)
+    if (isBasicControl && cell.boundNodeId && cell.boundParamKey) {
+       // If the parameter is occupied by a cable, lock the UI out.
+       const isModulated = store.edges.some(e => e.target === cell.boundNodeId && e.targetHandle === cell.boundParamKey)
+       return !isModulated
+    }
+    return true
+  })
+})
+
 // Auto-populate: on mount or when entering perf mode, add existing control nodes
-watch(() => store.isPerformanceMode, (on) => {
-  if (on) autoPopulate()
-}, { immediate: true })
+watch(
+  () => store.isPerformanceMode,
+  (on) => {
+    if (on) autoPopulate()
+  },
+  { immediate: true }
+)
+
+// Triggered affirmatively when graph finishes loading from localStorage or imported
+onMounted(() => {
+  window.addEventListener('graph-loaded', () => {
+    if (store.isPerformanceMode) autoPopulate()
+  })
+})
+onUnmounted(() => {
+  window.removeEventListener('graph-loaded', autoPopulate)
+})
 
 function autoPopulate() {
   const controlNodes = store.getControlNodes()
@@ -152,15 +180,25 @@ function autoPopulate() {
     const controlType = typeMap[node.type]
     if (!controlType) continue
 
-    // Create a cell pre-bound to this node's main output param
-    const cellId = store.addPerfCell(controlType)
-    
+    if (!controlType) continue
     // Find the primary param to bind
     const def = node.data?.def
     if (def?.params) {
       const primaryParam = Object.keys(def.params)[0] // e.g. 'value' for knob/slider, 'state' for toggle
       if (primaryParam) {
-        store.bindPerfCell(cellId, node.id, primaryParam)
+        // If the primary param has an incoming edge, this node is being modulated automatically.
+        // It should NOT be available as a manual perf UI control.
+        const isModulated = store.edges.some(e => e.target === node.id && e.targetHandle === primaryParam)
+        
+        if (!isModulated) {
+          // Double check it wasn't already manually mapped via perfGridCells save
+          const isPreMapped = store.perfGridCells.some(c => c.boundNodeId === node.id && c.boundParamKey === primaryParam)
+          if (!isPreMapped) {
+            // Only create the visual cell and bind it if it's free for user interaction
+            const cellId = store.addPerfCell(controlType)
+            store.bindPerfCell(cellId, node.id, primaryParam)
+          }
+        }
       }
     }
   }

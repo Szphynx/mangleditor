@@ -627,6 +627,13 @@ export const useGraphStore = defineStore('graph', () => {
                 return match ? Math.max(max, parseInt(match[1])) : max
             }, 0)
             nodeIdCounter = maxId
+            if (nodes.length > 0) {
+                // Ensure nodes are fully loaded
+                selectedNodeId.value = null
+            }
+
+            // Signal to mobile ControlDrawer to re-evaluate autoPopulate
+            window.dispatchEvent(new Event('graph-loaded'))
 
             return true
         } catch (err) {
