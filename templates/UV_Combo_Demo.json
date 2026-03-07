@@ -1,0 +1,194 @@
+{
+    "version": 1,
+    "title": "UV Combo Demo",
+    "timestamp": 12345678,
+    "nodes": [
+        {
+            "id": "n_lfo1",
+            "type": "lfo",
+            "position": {
+                "x": 100,
+                "y": -100
+            }
+        },
+        {
+            "id": "n_lfo2",
+            "type": "lfo",
+            "position": {
+                "x": 100,
+                "y": 150
+            }
+        },
+        {
+            "id": "n_lfo3",
+            "type": "lfo",
+            "position": {
+                "x": 100,
+                "y": 400
+            }
+        },
+        {
+            "id": "n_uvRep",
+            "type": "uvRepeat",
+            "position": {
+                "x": 400,
+                "y": -100
+            }
+        },
+        {
+            "id": "n_texTrans",
+            "type": "textureTransform",
+            "position": {
+                "x": 750,
+                "y": -100
+            }
+        },
+        {
+            "id": "n_img",
+            "type": "uiImageSlot",
+            "position": {
+                "x": 400,
+                "y": 200
+            }
+        },
+        {
+            "id": "n_texTrans2",
+            "type": "textureTransform",
+            "position": {
+                "x": 1100,
+                "y": 100
+            }
+        },
+        {
+            "id": "n_crt",
+            "type": "crt",
+            "position": {
+                "x": 1450,
+                "y": 100
+            }
+        },
+        {
+            "id": "n_preview",
+            "type": "preview",
+            "position": {
+                "x": 1750,
+                "y": 100
+            }
+        }
+    ],
+    "edges": [
+        {
+            "id": "e_lfo1_uvrep",
+            "source": "n_lfo1",
+            "sourceHandle": "out",
+            "target": "n_uvRep",
+            "targetHandle": "offsetX"
+        },
+        {
+            "id": "e_lfo3_uvrep",
+            "source": "n_lfo3",
+            "sourceHandle": "out",
+            "target": "n_uvRep",
+            "targetHandle": "offsetY"
+        },
+        {
+            "id": "e_lfo2_textrans",
+            "source": "n_lfo2",
+            "sourceHandle": "out",
+            "target": "n_texTrans",
+            "targetHandle": "rotation"
+        },
+        {
+            "id": "e_uvrep_textrans",
+            "source": "n_uvRep",
+            "sourceHandle": "out",
+            "target": "n_texTrans",
+            "targetHandle": "uvIn"
+        },
+        {
+            "id": "e_img_textrans",
+            "source": "n_img",
+            "sourceHandle": "out",
+            "target": "n_texTrans",
+            "targetHandle": "in"
+        },
+        {
+            "id": "e_textrans_textrans2",
+            "source": "n_texTrans",
+            "sourceHandle": "out",
+            "target": "n_texTrans2",
+            "targetHandle": "in"
+        },
+        {
+            "id": "e_textrans2_crt",
+            "source": "n_texTrans2",
+            "sourceHandle": "out",
+            "target": "n_crt",
+            "targetHandle": "in"
+        },
+        {
+            "id": "e_crt_prev",
+            "source": "n_crt",
+            "sourceHandle": "out",
+            "target": "n_preview",
+            "targetHandle": "in"
+        }
+    ],
+    "params": {
+        "n_lfo1": {
+            "waveform": "sine",
+            "frequency": 0.2,
+            "amplitude": 1,
+            "offset": 0
+        },
+        "n_lfo2": {
+            "waveform": "sine",
+            "frequency": 0.05,
+            "amplitude": 45,
+            "offset": 0
+        },
+        "n_lfo3": {
+            "waveform": "sine",
+            "frequency": 0.3,
+            "amplitude": 0.2,
+            "offset": 0
+        },
+        "n_uvRep": {
+            "repeatX": 3,
+            "repeatY": 3,
+            "mirror": true
+        },
+        "n_img": {},
+        "n_texTrans": {
+            "scaleX": 1.2,
+            "scaleY": 1.2,
+            "rotation": 15,
+            "wrapMode": "mirror"
+        },
+        "n_texTrans2": {
+            "scaleX": 1.5,
+            "scaleY": 1.5,
+            "rotation": 0,
+            "wrapMode": "clamp"
+        },
+        "n_crt": {
+            "curvature": 0.2,
+            "scanLines": 0.3,
+            "rgbShift": 0.1,
+            "brightness": 1.1
+        }
+    },
+    "exposedParams": {
+        "n_texTrans": {
+            "rotation": true
+        },
+        "n_uvRep": {
+            "repeatX": true,
+            "repeatY": true
+        }
+    },
+    "settings": {
+        "previewMode": "anchored"
+    },
+    "perfGridCells": []
+}
