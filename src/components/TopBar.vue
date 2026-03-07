@@ -31,7 +31,7 @@
         <button class="top-bar__dropdown-item" @click="$emit('download')">⬇ Download</button>
         <div class="top-bar__dropdown-divider"></div>
         <div class="top-bar__dropdown-header">Examples</div>
-        <button class="top-bar__dropdown-item" @click="loadExample('/templates/UV_Combo_Demo.json')">🌌 UV Combo Demo</button>
+        <button class="top-bar__dropdown-item" @click="loadExample(baseUrl + 'templates/UV_Combo_Demo.json')">🌌 UV Combo Demo</button>
       </div>
     </div>
     
@@ -106,6 +106,8 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import pkg from '../../package.json'
+
+const baseUrl = import.meta.env.BASE_URL
 
 const props = defineProps({
   isRendering: { type: Boolean, default: true },
