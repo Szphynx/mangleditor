@@ -141,7 +141,7 @@
       </div>
 
       <!-- Special content per node type -->
-      <template v-if="!params._collapsed">
+      <div v-show="!params._collapsed" style="width: 100%;">
         <!-- Image Input / UI Image Slot -->
       <div v-if="nodeType === 'imageInput' || nodeType === 'uiImageSlot'" class="flow-node__controls" @pointerdown.stop @mousedown.stop>
         <input ref="fileInput" type="file" accept="image/*" class="file-input-hidden" @change="onFileSelect" />
@@ -311,7 +311,7 @@
         ></canvas>
         <div class="flow-node__preview-label">Preview Node</div>
       </div>
-      </template>
+      </div>
 
       <!-- Output Handles -->
       <div class="flow-node__handles">
@@ -453,7 +453,7 @@ const hasImage = computed(() => !!imagePreviewUrl.value)
 onMounted(() => {
   // Try to load default image if none provided yet
   if ((props.nodeType === 'imageInput' || props.nodeType === 'uiImageSlot') && !imagePreviewUrl.value) {
-    const defaultImgPath = '/default_img.jpg'
+    const defaultImgPath = import.meta.env.BASE_URL + 'default_img.jpg'
     imagePreviewUrl.value = defaultImgPath
     
     // We need to trigger the engine to load this texture

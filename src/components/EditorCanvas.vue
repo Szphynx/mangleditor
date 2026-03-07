@@ -98,6 +98,40 @@
         />
       </template>
 
+      <!-- Custom Text Node Template -->
+      <template #node-textNode="nodeProps">
+        <div
+          class="text-node-custom"
+          :class="{ 'text-node-custom--selected': store.selectedNodeId === nodeProps.id }"
+          @click="store.selectNode(nodeProps.id)"
+          :style="{
+            minWidth: Math.max(50, (store.nodeParams[nodeProps.id]?.fontSize || 24) * 4) + 'px',
+            minHeight: Math.max(30, (store.nodeParams[nodeProps.id]?.fontSize || 24) * 1.5) + 'px'
+          }"
+        >
+          <NodeResizer
+            :min-width="10"
+            :min-height="10"
+            :is-visible="store.selectedNodeId === nodeProps.id"
+            class="nodrag"
+          />
+          <textarea
+            class="text-node-custom__input"
+            :value="store.nodeParams[nodeProps.id]?.content || ''"
+            @input="store.setParam(nodeProps.id, 'content', $event.target.value)"
+            :style="{
+              fontSize: (store.nodeParams[nodeProps.id]?.fontSize || 24) + 'px',
+              fontFamily: store.nodeParams[nodeProps.id]?.fontFamily || 'sans-serif',
+              color: store.nodeParams[nodeProps.id]?.color || '#ffffff',
+              textAlign: store.nodeParams[nodeProps.id]?.align || 'left',
+              fontWeight: store.nodeParams[nodeProps.id]?.fontWeight || 'normal',
+              fontStyle: store.nodeParams[nodeProps.id]?.fontStyle || 'normal'
+            }"
+            placeholder="Type something..."
+          ></textarea>
+        </div>
+      </template>
+
       <!-- Default template for all other node types -->
       <template
         v-for="nodeType in otherNodeTypes"
@@ -223,7 +257,7 @@ function addNodeAtCenter(type) {
 defineExpose({ addNodeAtCenter })
 
 // List of all node types that don't have special templates
-const specialTypes = ['imageInput', 'uiImageSlot', 'webcamInput', 'imageOutput', 'button', 'slider']
+const specialTypes = ['imageInput', 'uiImageSlot', 'webcamInput', 'imageOutput', 'button', 'slider', 'textNode']
 const otherNodeTypes = computed(() => {
   return Object.keys(getAllNodeDefs()).filter(t => !specialTypes.includes(t))
 })
@@ -316,5 +350,41 @@ function onDrop(event) {
 }
 .editor-controls button:hover {
   background: var(--border-color);
+}
+
+.text-node-custom {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 4px;
+  box-sizing: border-box;
+  background: transparent;
+  border: 1px dashed transparent;
+  transition: border-color 0.2s;
+  min-width: 50px;
+  min-height: 30px;
+}
+.text-node-custom:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.text-node-custom--selected {
+  border-color: var(--accent-primary, #00d4ff) !important;
+}
+
+.text-node-custom__input {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  color: #fff;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  padding: 0;
+  margin: 0;
+}
+.text-node-custom__input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
 }
 </style>

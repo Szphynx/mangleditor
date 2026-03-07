@@ -31,9 +31,12 @@
       <div v-if="Object.keys(def.params).length > 0" class="param-panel__section">
         <div class="param-panel__section-title">Parameters</div>
 
-        <div
+        <template
           v-for="(paramDef, key) in def.params"
           :key="key"
+        >
+        <div
+          v-if="!paramDef.hidden"
           class="param-field"
         >
           <div class="param-field__header">
@@ -154,9 +157,21 @@
             </label>
           </template>
 
-          <!-- String input -->
+          <!-- String / Color input -->
           <template v-else-if="paramDef.type === 'string'">
+            <!-- Color Picker -->
+            <div v-if="paramDef.ui === 'color'" style="display: flex; align-items: center; gap: 8px;">
+              <input
+                type="color"
+                class="param-field__color"
+                :value="params[key] ?? paramDef.default"
+                @input="onParamChange(key, $event.target.value)"
+              />
+              <span class="mono" style="font-size: 11px;">{{ params[key] ?? paramDef.default }}</span>
+            </div>
+            <!-- Standard String -->
             <input
+              v-else
               type="text"
               class="param-field__input"
               :value="params[key] ?? paramDef.default"
@@ -164,6 +179,7 @@
             />
           </template>
         </div>
+        </template>
       </div>
 
       <!-- Node Info -->

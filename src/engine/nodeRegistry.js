@@ -1037,6 +1037,24 @@ const NODE_DEFS = {
         },
         shaderKey: null,
     },
+
+    textNode: {
+        type: 'textNode',
+        label: 'Text',
+        category: 'utility',
+        inputs: [],
+        outputs: [],
+        params: {
+            content: { type: 'string', default: 'Double click to edit text...', hidden: true },
+            fontSize: { type: 'int', default: 24, min: 8, max: 200, step: 1, label: 'Font Size' },
+            fontFamily: { type: 'select', default: 'sans-serif', options: ['sans-serif', 'serif', 'monospace', 'cursive', 'fantasy'], label: 'Font Family' },
+            color: { type: 'string', default: '#ffffff', ui: 'color', label: 'Color' },
+            align: { type: 'select', default: 'left', options: ['left', 'center', 'right', 'justify'], label: 'Alignment' },
+            fontWeight: { type: 'select', default: 'normal', options: ['normal', 'bold', '100', '300', '900'], label: 'Weight' },
+            fontStyle: { type: 'select', default: 'normal', options: ['normal', 'italic', 'oblique'], label: 'Style' },
+        },
+        shaderKey: null,
+    },
 }
 
 // ======================== CATEGORIES ========================

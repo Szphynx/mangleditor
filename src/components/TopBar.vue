@@ -1,7 +1,7 @@
 <template>
   <div class="top-bar">
     <div class="top-bar__logo-container">
-      <img src="/mangleditor-icon.png" class="top-bar__logo-icon" alt="mangleditor" />
+      <img :src="`${baseUrl}mangleditor-icon.png`" class="top-bar__logo-icon" alt="mangleditor" />
       <span class="top-bar__logo-text">mangleditor <span class="top-bar__version">v{{ pkg.version }}</span></span>
       <span class="top-bar__coded-by">coded with love and haste</span>
     </div>
